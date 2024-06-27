@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org/">
+<head>
+<meta charset="UTF-8">
+<title>進出口公司資料</title>
+<link th:href="@{/css/allCss.css}" rel="stylesheet">
+</head>
+<body class=background2>
+	<div th:replace="~{layout/navbar}"></div>
+
+	<!--  <h1>首頁ok 666</h1>
+	<ul>
+		<li><a th:href="@{/users/register}">新增用戶</a></li>
+		<br />
+		<div th:text="${session.loginUserId} ? '歡迎登入 ' + ${session.loginUsername}"></div>-->
+
+		<!--<div th:if="${session.loginUserId != null} ">
+			<form th:action="@{/company/uploadPost}"
+				enctype="multipart/form-data" method="post">
+				<div class="mb-3">
+					<label for="formFile" class="form-label">請選檔案 </label> <input
+						class="form-control" type="file" name="dataFile" id="formFile"> 
+				</div>
+
+				<button type="submit" class="btn btn-primary">送出</button>
+				<div class="st1">
+					<a href="#"><input class="btm" type="button" value="所有資料刪除"></a>
+				</div>
+			</form>  
+		</div>-->
+
+		<div align="center">
+			<fieldset class="fieldset">
+				<legend class="legend">進出口公司資料</legend>
+				<div class="st1">
+					<form method="get" th:action="@{/company/findByBNID}">
+						<label for="BSID" class="t1">查詢公司編號 : </label>
+						<input type="text" id="BSID" name="businessId" placeholder="公司統編" class="input" maxlength="9" /><input class="btm" type="submit" value="確定" />
+					</form>
+					</div>
+					<div class="st1">
+					<form method="get" th:action="@{/company/findEverything}">
+						<label for="fuzzyimput" class="t1">資料模糊查詢 : </label><input type="text" id="fuzzyimput" name="everything" th:value="${everything} ?  ${everything}" placeholder="統編 or 公司名" class="input" />
+						<input class="btm" type="submit" value="確定" />
+					</form>
+				</div>
+
+
+
+				<div class="st1" th:if="${session.loginUserId != null} ">
+					<form method="post" th:action="@{/company/uploadPost}"
+						enctype="multipart/form-data">
+						<label class="t1">CSV資料新增 : </label><input type="file"
+							name="dataFile" />
+							<br>
+							<br>
+							<input class="btm" type="submit"
+							value="CSV確認上傳" />
+							
+							<a th:href="@{/company/deleteAll}"><input class="btm" type="button" value="所有資料刪除" onclick="return confirm('確定刪除【所有】筆資料嗎?')"/></a>
+					</form>
+				</div>
+			</fieldset>
+
+
+			<table class=allbigtable>
+				<tr class="tablehead">
+					<th class="thcsssame"
+						style="width: 90px; border-start-start-radius: 20px">詳細資訊
+					<th style="width: 90px;" class="thcsssame" th:if="${session.loginUserId != null} ">修改資料</th>
+					<th class="thcsssame">統一編號
+					<th class="thcsssame">核發日期
+					<th>廠商中文名稱
+					<th>廠商英文名稱
+					<th class="thcsssame">代表人
+					<th class="thcsssame" style="width: 90px; border-start-end-radius: 20px">電話
+						</tr>
+						
+						<th:block th:each=" oneCom : ${comList}">
+							<tr style="line-height: 3ex;">
+								<td class="thcsssame"><a th:href="@{/company/findByBNID(businessId=${oneCom.businessId})}"><input class="btminTB" type="button" value="詳細資訊"></a>
+								<td class="thcsssame" th:if="${session.loginUserId != null} "><a th:href="@{/company/updateByBNID(businessId=${oneCom.businessId})}"><input class="btminTB" type="button" value="修改資料"></a></td>
+								<td class="thcsssame" th:text="${oneCom.businessId}"></td>
+								<td class="thcsssame"
+									th:text="${#dates.format(oneCom.issueDate,'yyyy-MM-dd')}"></td>
+								<td class="thcsslong" th:text="${oneCom.chineseName}"></td>
+								<td class="thcsslong" th:text="${oneCom.englishName}"></td>
+								<td class="thcsssame" th:text="${oneCom.representative}"></td>
+								<td class="thcsssame" th:text="${oneCom.tel}"></td>
+							</tr>
+						</th:block>
+			</table>
+		
+			<br>
+			<div th:if="${findornot ==null}" align="center" id="pag">
+			<a th:href="@{/(pagee=0)}"><button class="btmPAG">|<</button></a>
+			
+				<th:block th:each=" butt : ${pageBut}">
+					<a th:if="${butt}!=${pagee}" th:href="@{/(pagee=${butt}-1)}"><button class="btmPAG" th:text="${butt}"></button></a>
+					<a th:if="${butt}==${pagee}" href="#"><button class="btmPAGno" th:text="${butt}"></button></a>
+				</th:block>
+				
+			<a th:href="@{/(pagee=${maxpagee}-1)}"><button class="btmPAG">>|</button></a>
+			</div>
+			
+			<div th:if="${findornot !=null}" align="center" id="pag">
+			<a th:href="@{/company/findEverything(pagee=0,everything=${everything})}"><button class="btmPAG">|<</button></a>
+			
+				<th:block th:each=" butt : ${pageBut}">
+					<a th:if="${butt}!=${pagee}"  th:href="@{/company/findEverything(pagee=${butt}-1,everything=${everything})}"><button class="btmPAG" th:text="${butt}"></button></a>
+					<a th:if="${butt}==${pagee}" href="#"><button class="btmPAGno" th:text="${butt}"></button></a>
+				</th:block>
+				
+			<a th:href="@{/company/findEverything(pagee=${maxpagee}-1,everything=${everything})}"><button class="btmPAG">>|</button></a>
+			</div>
+<br>
+			<h3 style="color: brown;" th:text="'共'+${countAll}+'筆進出口公司資料,目前第'+${pagee}+'頁'"></h3>
+			
+			
+			<img alt="memecat" style="margin-top: 50px;" th:src="@{/img/memecat.png}"
+				width=200px />
+
+		</div>
+	</ul>
+
+</body>
+</html>
