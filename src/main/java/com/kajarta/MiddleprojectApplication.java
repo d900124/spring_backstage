@@ -1,4 +1,4 @@
-package com.kajarda;
+package com.kajarta;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
