@@ -8,7 +8,7 @@
 		<version>3.2.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.enzo</groupId>
+	<groupId>com.kajarta_backstage</groupId>
 	<artifactId>spring_backstage</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
