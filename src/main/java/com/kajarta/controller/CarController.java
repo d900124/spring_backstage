@@ -1,20 +1,19 @@
 package com.kajarta.controller;
 
+import java.util.Optional;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kajarta.demo.model.Car;
-import com.spring_kajarta_frontstage.service.CarService;
+import com.kajarta.service.CarService;
 
 @RestController
 @RequestMapping("/kajarta")
@@ -24,32 +23,40 @@ public class CarController {
     private CarService carService;
 
     @GetMapping("/car/find/{Id}")
-    public String findDataById(@PathVariable(name = "Id") Integer Id) {
-        JSONObject responseBody = new JSONObject();
-        JSONArray array = new JSONArray();
-        Car car = carService.findById(Id).get();
-        if (car != null) {
-            JSONObject item = new JSONObject()
-                    .put("id", car.getId())
-                    .put("productionYear", car.getProductionYear())
-                    .put("milage", car.getMilage())
-                    .put("customerId", car.getCustomer())
-                    .put("employeeId", car.getEmployee())
-                    .put("negotiable", car.getNegotiable())
-                    .put("conditionScore", car.getConditionScore())
-                    .put("branch", car.getBranch())
-                    .put("state", car.getState())
-                    .put("price", car.getPrice())
-                    .put("launchDate", car.getLaunchDate())
-                    .put("carinfoId", car.getCarinfo())
-                    .put("color", car.getColor())
-                    .put("remark", car.getRemark())
-                    .put("createTime", car.getCreateTime())
-                    .put("updateTime", car.getUpdateTime());
-            array = array.put(item);
+    public ResponseEntity<?> findDataById(@PathVariable(name = "Id") Integer Id) {
+        Optional<Car> optional = carService.findById(Id);
+        if (optional.isPresent()) {
+            return ResponseEntity.ok(optional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+
         }
-        responseBody.put("list", array);
-        return responseBody.toString();
+
+        // JSONObject responseBody = new JSONObject();
+        // JSONArray array = new JSONArray();
+        // Car car = carService.findById(Id).get();
+        // if (car != null) {
+        // JSONObject item = new JSONObject()
+        // .put("id", car.getId())
+        // .put("productionYear", car.getProductionYear())
+        // .put("milage", car.getMilage())
+        // .put("customerId", car.getCustomer())
+        // .put("employeeId", car.getEmployee())
+        // .put("negotiable", car.getNegotiable())
+        // .put("conditionScore", car.getConditionScore())
+        // .put("branch", car.getBranch())
+        // .put("state", car.getState())
+        // .put("price", car.getPrice())
+        // .put("launchDate", car.getLaunchDate())
+        // .put("carinfoId", car.getCarinfo())
+        // .put("color", car.getColor())
+        // .put("remark", car.getRemark())
+        // .put("createTime", car.getCreateTime())
+        // .put("updateTime", car.getUpdateTime());
+        // array = array.put(item);
+        // }
+        // responseBody.put("list", array);
+        // return responseBody.toString();
     }
 
     // @PostMapping("/car/insert")
