@@ -2,14 +2,18 @@ package com.kajarta.controller;
 
 import java.util.Optional;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kajarta.demo.model.Car;
@@ -23,13 +27,13 @@ public class CarController {
     private CarService carService;
 
     @GetMapping("/car/find/{Id}")
-    public ResponseEntity<?> findDataById(@PathVariable(name = "Id") Integer Id) {
+    @ResponseBody
+    public ResponseEntity<Car> findDataById(@PathVariable(name = "Id") Integer Id, Model model) {
         Optional<Car> optional = carService.findById(Id);
         if (optional.isPresent()) {
             return ResponseEntity.ok(optional.get());
         } else {
             return ResponseEntity.notFound().build();
-
         }
 
         // JSONObject responseBody = new JSONObject();
@@ -59,32 +63,36 @@ public class CarController {
         // return responseBody.toString();
     }
 
-    // @PostMapping("/car/insert")
-    // public String insertData(@RequestBody String body) {
-    // JSONObject reponseBody = new JSONObject();
-    // JSONObject obj = new JSONObject(body);
-    // Integer id = obj.isNull("id") ? null : obj.getInt("id");
-    // if (id == null) {
-    // reponseBody.put("success", false);
-    // reponseBody.put("message", "ID是必要欄位");
-    // } else {
-    // if (tdService.exists(id)) {
-    // reponseBody.put("success", false);
-    // reponseBody.put("message", "ID已存在");
-    // } else {
-    // TpeData td = tdService.create(body);
-    // if (td == null) {
-    // reponseBody.put("success", false);
-    // reponseBody.put("message", "新增失敗");
-    // } else {
-    // reponseBody.put("success", true);
-    // reponseBody.put("message", "新增成功");
+    @PostMapping("/car/create")
+    public ResponseEntity<Car> create(@RequestBody Car car) {
+        Customer customer=
+        Car saveCar = carService.createOrModify(car);
+        return new ResponseEntity<>(saveCar, HttpStatus.CREATED);
 
-    // }
-    // }
-    // }
-    // return reponseBody.toString();
-    // }
+        // JSONObject reponseBody = new JSONObject();
+        // JSONObject obj = new JSONObject(body);
+        // Integer id = obj.isNull("id") ? null : obj.getInt("id");
+        // if (id == null) {
+        // reponseBody.put("success", false);
+        // reponseBody.put("message", "ID是必要欄位");
+        // } else {
+        // if (carService.exists(id)) {
+        // reponseBody.put("success", false);
+        // reponseBody.put("message", "ID已存在");
+        // } else {
+        // carService td = carService.create(body);
+        // if (td == null) {
+        // reponseBody.put("success", false);
+        // reponseBody.put("message", "新增失敗");
+        // } else {
+        // reponseBody.put("success", true);
+        // reponseBody.put("message", "新增成功");
+
+        // }
+        // }
+        // }
+        // return reponseBody.toString();
+    }
 
     // @DeleteMapping("/car/remove/{id}")
     // public String removeData(@PathVariable(name = "id") Integer Id) {
