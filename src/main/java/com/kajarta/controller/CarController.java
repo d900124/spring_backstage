@@ -2,7 +2,6 @@ package com.kajarta.controller;
 
 import java.util.Optional;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kajarta.demo.model.Car;
+import com.kajarta.demo.model.Customer;
+import com.kajarta.demo.vo.CustomerVO;
 import com.kajarta.service.CarService;
+import com.spring_kajarta_frontstage.service.CustomerService;
 
 @RestController
 @RequestMapping("/kajarta")
@@ -25,10 +27,12 @@ import com.kajarta.service.CarService;
 public class CarController {
     @Autowired
     private CarService carService;
+    @Autowired
+    private CustomerService customerService;
 
     @GetMapping("/car/find/{Id}")
     @ResponseBody
-    public ResponseEntity<Car> findDataById(@PathVariable(name = "Id") Integer Id, Model model) {
+    public ResponseEntity<Car> findDataById(@PathVariable(name = "Id") Integer Id) {
         Optional<Car> optional = carService.findById(Id);
         if (optional.isPresent()) {
             return ResponseEntity.ok(optional.get());
@@ -65,7 +69,8 @@ public class CarController {
 
     @PostMapping("/car/create")
     public ResponseEntity<Car> create(@RequestBody Car car) {
-        Customer customer=
+        Integer id = car.getId();
+        Customer customer = customerService.findById(id);
         Car saveCar = carService.createOrModify(car);
         return new ResponseEntity<>(saveCar, HttpStatus.CREATED);
 
