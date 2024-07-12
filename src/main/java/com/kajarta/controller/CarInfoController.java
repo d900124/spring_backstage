@@ -43,6 +43,7 @@ public class CarInfoController {
 
     @PostMapping("/carinfo") // 新增
     public ResponseEntity<Carinfo> createCarInfo(@RequestBody Carinfo carinfo) {
+        System.out.println("Received Carinfo: " + carinfo);
         Carinfo createdCarinfo = carInfoService.create(carinfo);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCarinfo);
     }
