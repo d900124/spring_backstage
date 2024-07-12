@@ -3,23 +3,16 @@ package com.kajarta.controller;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kajarta.demo.model.Car;
-import com.kajarta.demo.model.Customer;
-import com.kajarta.demo.vo.CustomerVO;
 import com.kajarta.service.CarService;
-import com.spring_kajarta_frontstage.service.CustomerService;
 
 @RestController
 @RequestMapping("/kajarta")
@@ -27,8 +20,11 @@ import com.spring_kajarta_frontstage.service.CustomerService;
 public class CarController {
     @Autowired
     private CarService carService;
-    @Autowired
-    private CustomerService customerService;
+
+    // @Autowired
+    // private EmployeeService employeeService;
+    // @Autowired
+    // private CarInfoService carInfoService;
 
     @GetMapping("/car/find/{Id}")
     @ResponseBody
@@ -67,37 +63,38 @@ public class CarController {
         // return responseBody.toString();
     }
 
-    @PostMapping("/car/create")
-    public ResponseEntity<Car> create(@RequestBody Car car) {
-        Integer id = car.getId();
-        Customer customer = customerService.findById(id);
-        Car saveCar = carService.createOrModify(car);
-        return new ResponseEntity<>(saveCar, HttpStatus.CREATED);
+    // @PostMapping("/car/create")
+    // public ResponseEntity<Car> create(@RequestBody Car car) {
+    // car.setCustomer(customerService.findById(car.getCustomer().getId()));
+    // car.setEmployee(employeeService.findById(car.getEmployee().getId()));
+    // car.setCarinfo(carInfoService.findById(car.getCarinfo().getId()));
+    // Car saveCar = carService.createOrModify(car);
+    // return new ResponseEntity<>(saveCar, HttpStatus.CREATED);
 
-        // JSONObject reponseBody = new JSONObject();
-        // JSONObject obj = new JSONObject(body);
-        // Integer id = obj.isNull("id") ? null : obj.getInt("id");
-        // if (id == null) {
-        // reponseBody.put("success", false);
-        // reponseBody.put("message", "ID是必要欄位");
-        // } else {
-        // if (carService.exists(id)) {
-        // reponseBody.put("success", false);
-        // reponseBody.put("message", "ID已存在");
-        // } else {
-        // carService td = carService.create(body);
-        // if (td == null) {
-        // reponseBody.put("success", false);
-        // reponseBody.put("message", "新增失敗");
-        // } else {
-        // reponseBody.put("success", true);
-        // reponseBody.put("message", "新增成功");
+    // JSONObject reponseBody = new JSONObject();
+    // JSONObject obj = new JSONObject(body);
+    // Integer id = obj.isNull("id") ? null : obj.getInt("id");
+    // if (id == null) {
+    // reponseBody.put("success", false);
+    // reponseBody.put("message", "ID是必要欄位");
+    // } else {
+    // if (carService.exists(id)) {
+    // reponseBody.put("success", false);
+    // reponseBody.put("message", "ID已存在");
+    // } else {
+    // carService td = carService.create(body);
+    // if (td == null) {
+    // reponseBody.put("success", false);
+    // reponseBody.put("message", "新增失敗");
+    // } else {
+    // reponseBody.put("success", true);
+    // reponseBody.put("message", "新增成功");
 
-        // }
-        // }
-        // }
-        // return reponseBody.toString();
-    }
+    // }
+    // }
+    // }
+    // return reponseBody.toString();
+    // }
 
     // @DeleteMapping("/car/remove/{id}")
     // public String removeData(@PathVariable(name = "id") Integer Id) {
