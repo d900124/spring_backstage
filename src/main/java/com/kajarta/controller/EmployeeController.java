@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +36,44 @@ import java.util.List;
 public class EmployeeController extends BaseController {
     @Autowired
     private EmployeeService employeeService;
+
+
+    @GetMapping("/current")
+    public ResultNew<Employee> getCurrentEmployee(Principal loginUser) {
+        ResultNew<Employee> result = new ResultNew<>();
+
+        if (loginUser == null) {
+            result.setCode(401); // Unauthorized
+            result.setMsg("未登录或认证失效");
+            result.setData(null);
+            result.setSuccess(false);
+            return result;
+        }
+
+        String username = loginUser.getName();
+        log.info("Current user: {}", username); // 打印當前用戶
+        Employee employee = employeeService.getByUsername(username);
+
+        if (employee != null) {
+            // 设置成功
+            result.setCode(200);
+            result.setMsg("查詢成功");
+            result.setData(employee);
+            result.setSuccess(true);
+        } else {
+            // 设置失败
+            result.setCode(404); // Not Found
+            result.setMsg("找不到員工資料");
+            result.setData(null);
+            result.setSuccess(false);
+        }
+        return result;
+    }
+
+
+
+
+
 
     // 統計員工數量
     @Operation(summary = "統計員工數量")
