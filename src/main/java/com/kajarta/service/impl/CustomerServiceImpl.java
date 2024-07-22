@@ -100,20 +100,54 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     @Override
     public CustomerVO modify(CustomerVO customerVO) {
-        try {
-            Optional<Customer> optionalCustomer = customerRepo.findById(customerVO.getId());
-            if (optionalCustomer.isPresent()) {
-                Customer customer = optionalCustomer.get();
-                BeanUtils.copyProperties(customerVO, customer,"createTime", "updateTime");
-                customerRepo.save(customer);
-                CustomerVO updatedCustomerVO = new CustomerVO();
-                BeanUtils.copyProperties(customer, updatedCustomerVO);
-                return updatedCustomerVO;
-            } else {
-                return null;
+        Optional<Customer> optionalCustomer = customerRepo.findById(customerVO.getId());
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            if (customerVO.getAccountType() != null) {
+                customer.setAccountType(customerVO.getAccountType());
             }
-        } catch (BeansException e) {
-            throw new RuntimeException(e);
+            if (customerVO.getAccount() != null) {
+                customer.setAccount(customerVO.getAccount());
+            }
+            if (customerVO.getPassword() != null) {
+                customer.setPassword(customerVO.getPassword());
+            }
+            if (customerVO.getName() != null) {
+                customer.setName(customerVO.getName());
+            }
+            if (customerVO.getTel() != null) {
+                customer.setTel(customerVO.getTel());
+            }
+            if (customerVO.getPhone() != null) {
+                customer.setPhone(customerVO.getPhone());
+            }
+            if (customerVO.getEmail() != null) {
+                customer.setEmail(customerVO.getEmail());
+            }
+            if (customerVO.getPicture() != null) {
+                customer.setPicture(customerVO.getPicture());
+            }
+            if (customerVO.getSex() != null) {
+                customer.setSex(customerVO.getSex());
+            }
+            if (customerVO.getCity() != null) {
+                customer.setCity(customerVO.getCity());
+            }
+            if (customerVO.getRemarks() != null) {
+                customer.setRemarks(customerVO.getRemarks());
+            }
+            if (customerVO.getAddress() != null) {
+                customer.setAddress(customerVO.getAddress());
+            }
+            if (customerVO.getIdNumber() != null) {
+                customer.setIdNumber(customerVO.getIdNumber());
+            }
+            customerRepo.save(customer);
+            CustomerVO updatedCustomerVO = new CustomerVO();
+            BeanUtils.copyProperties(customer, updatedCustomerVO);
+            return updatedCustomerVO;
+        } else {
+            return null;
         }
     }
 }
