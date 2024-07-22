@@ -63,13 +63,13 @@ public class CarController {
         // return responseBody.toString();
     }
 
-    // @PostMapping("/car/create")
-    // public ResponseEntity<Car> create(@RequestBody Car car) {
-    // car.setCustomer(customerService.findById(car.getCustomer().getId()));
-    // car.setEmployee(employeeService.findById(car.getEmployee().getId()));
-    // car.setCarinfo(carInfoService.findById(car.getCarinfo().getId()));
-    // Car saveCar = carService.createOrModify(car);
-    // return new ResponseEntity<>(saveCar, HttpStatus.CREATED);
+    @PostMapping("/car/create")
+    public ResponseEntity<Car> create(@RequestBody Car car) {
+    car.setCustomer(customerService.findById(car.getCustomer().getId()));
+    car.setEmployee(employeeService.findById(car.getEmployee().getId()));
+    car.setCarinfo(carInfoService.findById(car.getCarinfo().getId()));
+    Car saveCar = carService.createOrModify(car);
+    return new ResponseEntity<>(saveCar, HttpStatus.CREATED);
 
     // JSONObject reponseBody = new JSONObject();
     // JSONObject obj = new JSONObject(body);
