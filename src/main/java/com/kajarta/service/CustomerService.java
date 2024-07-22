@@ -19,18 +19,7 @@ public interface CustomerService {
     Customer getByUsername(String account);
 
     // 分頁多條件查詢
-    Page<CustomerVO> findByConditionsWithPagination(
-            Character sex,
-            Integer accountType,
-            String account,
-            Integer city,
-            String name,
-            String phone,
-            String email,
-            int page,
-            int size,
-            String sort,
-            boolean dir);
+    Page<CustomerVO> findByConditionsWithPagination(CustomerVO customerVO);
 
     // 新增
     CustomerVO create(CustomerVO customerVO);
