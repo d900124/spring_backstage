@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kajarta.demo.model.Like;
 import com.kajarta.demo.model.ViewCar;
-import com.spring_kajarta_frontstage.service.LikeService;
-import com.spring_kajarta_frontstage.service.ViewCarService;
-import com.spring_kajarta_frontstage.util.DatetimeConverter;
+import com.kajarta.service.LikeService;
+import com.kajarta.service.ViewCarService;
+import com.kajarta.util.DatetimeConverter;
 
 @RestController
 @RequestMapping("/front/like")

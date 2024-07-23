@@ -1,7 +1,7 @@
-package com.spring_kajarta_frontstage.controller;
+package com.kajarta.controller;
 
-import com.spring_kajarta_frontstage.service.CarService;
-import com.spring_kajarta_frontstage.service.ImageService;
+import com.kajarta.service.CarService;
+import com.kajarta.service.ImageService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

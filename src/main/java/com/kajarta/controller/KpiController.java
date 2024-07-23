@@ -1,9 +1,9 @@
-package com.spring_kajarta_frontstage.controller;
+package com.kajarta.controller;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.spring_kajarta_frontstage.service.KpiService;
+import com.kajarta.service.KpiService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
