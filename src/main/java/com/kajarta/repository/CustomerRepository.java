@@ -18,7 +18,8 @@ public interface CustomerRepository extends JpaRepository<Customer,Integer>{
             + "(:city IS NULL OR c.city = :city) AND "
             + "(:name IS NULL OR c.name LIKE CONCAT('%', :name, '%')) AND "
             + "(:phone IS NULL OR c.phone = :phone) AND "
-            + "(:email IS NULL OR c.email = :email)")
+            + "(:email IS NULL OR c.email = :email)"
+            + "ORDER BY c.id DESC ")
     Page<Customer> findByMultipleConditions(
             @Param("sex") Character sex,
             @Param("accountType") Integer accountType,
