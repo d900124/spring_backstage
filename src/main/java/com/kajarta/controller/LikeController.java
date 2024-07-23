@@ -1,4 +1,4 @@
-package com.spring_kajarta_frontstage.controller;
+package com.kajarta.controller;
 
 import java.util.List;
 import java.util.Optional;
