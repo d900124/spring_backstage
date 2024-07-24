@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +36,34 @@ import java.util.List;
 public class EmployeeController extends BaseController {
     @Autowired
     private EmployeeService employeeService;
+
+    @Operation(summary = "員工資訊-依據員工名查詢單筆")
+    @GetMapping("/info/username/{username}")
+    public Result<EmployeeVO> queryByUsername(@Parameter(description = "員工名") @PathVariable String username) {
+        // 依據token獲取後台登入員工
+
+        log.info("{}-查詢員工資訊-單筆：{}", "到時候換成上一步拿到的管理員", username);
+        EmployeeVO employeeVO;
+        try {
+            Employee employee = employeeService.getByUsername(username);
+            employeeVO = new EmployeeVO();
+
+            BeanUtils.copyProperties(employee, employeeVO);
+            employeeVO.setTeamLeaderId(employee.getTeamLeader().getId());
+            employeeVO.setTeamLeaderName(employee.getTeamLeader().getName());
+            employeeVO.setAccountTypeName(AccountTypeEnum.getByCode(employee.getAccountType()).getAccountType());
+            employeeVO.setBranchCity(BranchEnum.getByCode(employee.getBranch()).getCity());
+            employeeVO.setBranchAddress(BranchEnum.getByCode(employee.getBranch()).getAddress());
+            employeeVO.setBranchName(BranchEnum.getByCode(employee.getBranch()).getBranchName());
+            employeeVO.setCreateTime(DatetimeConverter.toString(new Date(employee.getCreateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM_SS));
+            employeeVO.setUpdateTime(DatetimeConverter.toString(new Date(employee.getUpdateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM_SS));
+        } catch (Exception e) {
+            return ResultUtil.error("查詢出錯");
+        }
+        return ResultUtil.success(employeeVO);
+    }
+
+
 
     // 統計員工數量
     @Operation(summary = "統計員工數量")

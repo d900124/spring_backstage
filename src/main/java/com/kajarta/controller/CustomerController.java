@@ -1,14 +1,19 @@
 package com.kajarta.controller;
 
 import com.kajarta.demo.domian.Result;
+import com.kajarta.demo.domian.ResultNew;
+import com.kajarta.demo.enums.AccountTypeEnum;
+import com.kajarta.demo.enums.CityEnum;
 import com.kajarta.demo.model.Customer;
 import com.kajarta.demo.utils.ResultUtil;
 import com.kajarta.demo.vo.CustomerVO;
+import com.kajarta.demo.vo.EmployeeVO;
 import com.kajarta.service.CustomerService;
 import com.kajarta.util.DatetimeConverter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -55,32 +60,18 @@ public class CustomerController extends BaseController {
 
     @Operation(summary = "會員資訊-依多條件查詢(分頁)")
     @PostMapping("/query")
-    public Result<Page<CustomerVO>> query(@RequestBody CustomerVO customerVO,
-                                          @RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "10") int size,
-                                          @RequestParam(defaultValue = "id") String sort,
-                                          @RequestParam(defaultValue = "true") boolean dir) {
+    public ResultNew<Page<CustomerVO>> queryCustomer(@RequestBody CustomerVO customerVO, HttpServletRequest request) {
 
         log.info("{}-後台查詢客戶資訊-多條件查詢(分頁)", "到時候換成上一步拿到的管理員");
-        Page<CustomerVO> customerPage = customerService.findByConditionsWithPagination(
-                customerVO.getSex(), customerVO.getAccountType(), customerVO.getAccount(), customerVO.getCity(),
-                customerVO.getName(), customerVO.getPhone(), customerVO.getEmail(), page, size, sort, dir);
+        Page<CustomerVO> customerPage = customerService.findByConditionsWithPagination(customerVO);
 
-        Result<Page<CustomerVO>> result = new Result<>();
+        ResultNew<Page<CustomerVO>> result =  new ResultNew<>();
         result.setCode(200);
         result.setMsg("查詢成功");
         result.setData(customerPage);
         result.setSuccess(true);
-        result.setTotalPage(customerPage.getTotalPages());
-        result.setTotalElement(customerPage.getTotalElements());
-        result.setPageNumber(customerPage.getNumber());
-        result.setNumberOfElementsOnPage(customerPage.getNumberOfElements());
-        result.setHasNext(customerPage.hasNext());
-        result.setHasPrevious(customerPage.hasPrevious());
-        result.setFirstPageOrNot(customerPage.isFirst());
-        result.setLastPageOrNot(customerPage.isLast());
-
         return result;
+
     }
 
 
@@ -117,8 +108,10 @@ public class CustomerController extends BaseController {
             Customer customer = customerService.findById(customerId);
             customerVO = new CustomerVO();
             BeanUtils.copyProperties(customer, customerVO);
-            customerVO.setCreateTime(DatetimeConverter.toString(new Date(customer.getCreateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM_SS));
-            customerVO.setUpdateTime(DatetimeConverter.toString(new Date(customer.getUpdateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM_SS));
+            customerVO.setAccountTypeName(AccountTypeEnum.getByCode(customer.getAccountType()).getAccountType());
+            customerVO.setCityName(CityEnum.getByCode(customer.getCity()).getCity());
+            customerVO.setCreateTime(DatetimeConverter.toString(new Date(customer.getCreateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM));
+            customerVO.setUpdateTime(DatetimeConverter.toString(new Date(customer.getUpdateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM));
         } catch (Exception e) {
             return ResultUtil.error("查詢出錯");
         }
