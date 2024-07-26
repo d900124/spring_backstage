@@ -1,148 +1,313 @@
 package com.kajarta.controller;
 
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kajarta.demo.enums.BranchEnum;
+import com.kajarta.demo.model.Brand;
 import com.kajarta.demo.model.Car;
+import com.kajarta.demo.model.Carinfo;
+import com.kajarta.demo.model.Displacement;
+import com.kajarta.demo.model.Door;
+import com.kajarta.demo.model.Gasoline;
+import com.kajarta.demo.model.Negotiable;
+import com.kajarta.demo.model.Passenger;
+import com.kajarta.demo.model.Preference;
+import com.kajarta.demo.model.Rearwheel;
+import com.kajarta.demo.model.Suspension;
+import com.kajarta.demo.model.Transmission;
+import com.kajarta.service.BrandService;
+import com.kajarta.service.CarInfoService;
 import com.kajarta.service.CarService;
+import com.kajarta.service.DisplacementService;
+import com.kajarta.service.DoorService;
+import com.kajarta.service.GasolineService;
+import com.kajarta.service.NegotiableService;
+import com.kajarta.service.PassengerService;
+import com.kajarta.service.RearWheelService;
+import com.kajarta.service.SuspensionService;
+import com.kajarta.service.TransmissionService;
+import com.kajarta.util.DatetimeConverter;
 
 @RestController
-@RequestMapping("/kajarta")
+@RequestMapping("/car")
 @CrossOrigin
 public class CarController {
     @Autowired
     private CarService carService;
 
-    // @Autowired
-    // private EmployeeService employeeService;
-    // @Autowired
-    // private CarInfoService carInfoService;
+    @Autowired
+    private CarInfoService carInfoService;
 
-    @GetMapping("/car/find/{Id}")
-    @ResponseBody
-    public ResponseEntity<Car> findDataById(@PathVariable(name = "Id") Integer Id) {
-        Optional<Car> optional = carService.findById(Id);
-        if (optional.isPresent()) {
-            return ResponseEntity.ok(optional.get());
-        } else {
-            return ResponseEntity.notFound().build();
+    @Autowired
+    private BrandService brandService;
+
+    @Autowired
+    private NegotiableService negotiableService;
+
+    @Autowired
+    private SuspensionService suspensionService;
+
+    @Autowired
+    private DoorService doorService;
+
+    @Autowired
+    private PassengerService passengerService;
+
+    @Autowired
+    private RearWheelService rearWheelService;
+
+    @Autowired
+    private GasolineService gasolineService;
+
+    @Autowired
+    private TransmissionService transmissionService;
+
+    @Autowired
+    private DisplacementService displacementService;
+
+    // 查全部
+    @GetMapping("/findAll")
+    public String findAll(@RequestParam Integer pageNumber,
+            @RequestParam String sortOrder,
+            @RequestParam Integer max) {
+        Page<Car> carPage = carService.findByPage(pageNumber, sortOrder, max);
+        List<Car> Cars = carPage.getContent();
+        JSONObject responseBody = new JSONObject();
+        JSONArray array = new JSONArray();
+        for (Car car : Cars) {
+            String createTime = DatetimeConverter.toString(car.getCreateTime(), "yyyy-MM-dd");
+            String updateTime = DatetimeConverter.toString(car.getUpdateTime(), "yyyy-MM-dd");
+            JSONObject item = new JSONObject()
+                    .put("id", car.getId())
+                    .put("productionYear", car.getProductionYear())
+                    .put("milage", car.getMilage())
+                    .put("customerId", car.getCustomer().getId())
+                    .put("employeeId", car.getEmployee().getId())
+                    .put("negotiable", car.getNegotiable())
+                    .put("conditionScore", car.getConditionScore())
+                    .put("branch", car.getBranch())
+                    .put("state", car.getState())
+                    .put("price", car.getPrice())
+                    .put("launchDate", car.getLaunchDate())
+                    .put("carinfoId", car.getCarinfo().getId())
+                    .put("color", car.getColor())
+                    .put("remark", car.getRemark())
+                    .put("createTime", createTime)
+                    .put("updateTime", updateTime);
+            array.put(item);
         }
-
-        // JSONObject responseBody = new JSONObject();
-        // JSONArray array = new JSONArray();
-        // Car car = carService.findById(Id).get();
-        // if (car != null) {
-        // JSONObject item = new JSONObject()
-        // .put("id", car.getId())
-        // .put("productionYear", car.getProductionYear())
-        // .put("milage", car.getMilage())
-        // .put("customerId", car.getCustomer())
-        // .put("employeeId", car.getEmployee())
-        // .put("negotiable", car.getNegotiable())
-        // .put("conditionScore", car.getConditionScore())
-        // .put("branch", car.getBranch())
-        // .put("state", car.getState())
-        // .put("price", car.getPrice())
-        // .put("launchDate", car.getLaunchDate())
-        // .put("carinfoId", car.getCarinfo())
-        // .put("color", car.getColor())
-        // .put("remark", car.getRemark())
-        // .put("createTime", car.getCreateTime())
-        // .put("updateTime", car.getUpdateTime());
-        // array = array.put(item);
-        // }
-        // responseBody.put("list", array);
-        // return responseBody.toString();
+        responseBody.put("list", array);
+        responseBody.put("totalPages", carPage.getTotalPages());
+        responseBody.put("totalElements", carPage.getTotalElements());
+        return responseBody.toString();
     }
 
-    // @PostMapping("/car/create")
-    // public ResponseEntity<Car> create(@RequestBody Car car) {
-    // car.setCustomer(customerService.findById(car.getCustomer().getId()));
-    // car.setEmployee(employeeService.findById(car.getEmployee().getId()));
-    // car.setCarinfo(carInfoService.findById(car.getCarinfo().getId()));
-    // Car saveCar = carService.createOrModify(car);
-    // return new ResponseEntity<>(saveCar, HttpStatus.CREATED);
+    // 查詢單筆
+    @GetMapping("/find/{Id}")
+    @ResponseBody
+    public String findDataById(@PathVariable(name = "Id") Integer Id) {
+        JSONObject responseBody = new JSONObject();
+        JSONArray array = new JSONArray();
+        if (Id == null) {
+            responseBody.put("success", false);
+            responseBody.put("message", "ID不得為空");
+        } else {
+            Car carBean = carService.findById(Id);
+            Carinfo carInfoBean = carInfoService.findById(Id);
+            Brand brandEnum = brandService.findById(Id);
+            Negotiable negotiableEnum = negotiableService.findById(Id);
+            Suspension suspensionEnum = suspensionService.findById(Id);
+            Door doorEnum = doorService.findById(Id);
+            Passenger passengerEnum = passengerService.findById(Id);
+            Rearwheel rearwheelEnum = rearWheelService.findById(Id);
+            Gasoline gasolineEnum = gasolineService.findById(Id);
+            Transmission transmissionEnum = transmissionService.findById(Id);
+            Displacement displacementEnum = displacementService.findById(Id);
+            BranchEnum branch = BranchEnum.getByCode(Id);
+            if (carBean != null) {
+                Car carModel = carBean;
+                String compareUrl = "kajarta/car/compare";
+                JSONObject carJson = new JSONObject()
+                        .put("id", carModel.getId())
+                        .put("productionYear", carModel.getProductionYear())
+                        .put("milage", carModel.getMilage())
+                        .put("customerId", carModel.getCustomer().getId())
+                        .put("employeeId", carModel.getEmployee().getId())
+                        .put("negotiable", negotiableEnum.getPercent())
+                        .put("conditionScore", carModel.getConditionScore())
+                        .put("branch", branch.getBranchName())
+                        .put("state", carModel.getState())
+                        .put("price", carModel.getPrice())
+                        .put("launchDate", carModel.getLaunchDate())
+                        .put("color", carModel.getColor())
+                        .put("remark", carModel.getRemark())
+                        .put("compare", compareUrl)
+                        // CarInfo的值
+                        .put("carinfoId", carModel.getCarinfo().getId())
+                        .put("carinfoBrand", brandEnum.getBrand())
+                        .put("carinfoModelName", carInfoBean.getModelName())
+                        .put("carinfoSuspension", suspensionEnum.getType())
+                        .put("carinfoDoor", doorEnum.getCardoor())
+                        .put("carinfoPassenger", passengerEnum.getSeat())
+                        .put("carinfoRearWheel", rearwheelEnum.getWheel())
+                        .put("carinfoGasoline", gasolineEnum.getGaso())
+                        .put("carinfoTransmission", transmissionEnum.getTrans())
+                        .put("carinfoCc", displacementEnum.getCc())
+                        .put("carinfoHp", carInfoBean.getHp())
+                        .put("carinfoTorque", carInfoBean.getTorque())
+                        .put("carinfoCreateTime", carInfoBean.getCreateTime())
+                        .put("carinfoUpdateTime", carInfoBean.getUpdateTime());
 
-    // JSONObject reponseBody = new JSONObject();
-    // JSONObject obj = new JSONObject(body);
-    // Integer id = obj.isNull("id") ? null : obj.getInt("id");
-    // if (id == null) {
-    // reponseBody.put("success", false);
-    // reponseBody.put("message", "ID是必要欄位");
-    // } else {
-    // if (carService.exists(id)) {
-    // reponseBody.put("success", false);
-    // reponseBody.put("message", "ID已存在");
-    // } else {
-    // carService td = carService.create(body);
-    // if (td == null) {
-    // reponseBody.put("success", false);
-    // reponseBody.put("message", "新增失敗");
-    // } else {
-    // reponseBody.put("success", true);
-    // reponseBody.put("message", "新增成功");
+                array = array.put(carJson);
+                responseBody.put("list", array);
+                return responseBody.toString();
+            } else {
+                responseBody.put("success", false);
+                responseBody.put("message", "ID不存在");
+            }
+        }
+        return responseBody.toString();
+    }
 
-    // }
-    // }
-    // }
-    // return reponseBody.toString();
-    // }
+    // ------------------------------------------------------------------------
+    // 查詢兩筆(比較) 未完成
+    @GetMapping("/compare")
+    @ResponseBody
+    public String compare(@PathVariable(name = "Id") Integer Id) {
+        JSONObject responseBody = new JSONObject();
+        JSONArray array = new JSONArray();
+        if (Id == null) {
+            responseBody.put("success", false);
+            responseBody.put("message", "ID不得為空");
+        } else {
+            Car carOptional = carService.findById(Id);
+            if (carOptional != null) {
+                Car carModel = carOptional;
+                JSONObject item = new JSONObject()
+                        .put("id", carModel.getId())
+                        .put("productionYear", carModel.getProductionYear())
+                        .put("milage", carModel.getMilage())
+                        .put("customerId", carModel.getCustomer().getId())
+                        .put("employeeId", carModel.getEmployee().getId())
+                        .put("negotiable", carModel.getNegotiable())
+                        .put("conditionScore", carModel.getConditionScore())
+                        .put("branch", carModel.getBranch())
+                        .put("state", carModel.getState())
+                        .put("price", carModel.getPrice())
+                        .put("launchDate", carModel.getLaunchDate())
+                        .put("carinfoId", carModel.getCarinfo().getId())
+                        .put("color", carModel.getColor())
+                        .put("remark", carModel.getRemark());
+                array = array.put(item);
+                responseBody.put("list", array);
+                return responseBody.toString();
+            } else {
+                responseBody.put("success", false);
+                responseBody.put("message", "ID不存在");
+            }
+        }
 
-    // @DeleteMapping("/car/remove/{id}")
-    // public String removeData(@PathVariable(name = "id") Integer Id) {
-    // JSONObject responseBody = new JSONObject();
-    // if (Id == null) {
-    // responseBody.put("success", false);
-    // responseBody.put("message", "ID是必要欄位");
-    // } else {
-    // if (!tdService.exists(Id)) {
-    // responseBody.put("success", false);
-    // responseBody.put("message", "ID不存在");
-    // } else {
-    // if (!tdService.remove(Id)) {
-    // responseBody.put("success", false);
-    // responseBody.put("message", "刪除失敗");
-    // } else {
-    // responseBody.put("success", true);
-    // responseBody.put("message", "刪除成功");
+        if (Id == null) {
+            responseBody.put("success", "選擇你要比較的車輛");
+        } else {
+            Car carOptional = carService.findById(Id);
+            if (carOptional != null) {
+                Car carModel = carOptional;
+                JSONObject item = new JSONObject()
+                        .put("id", carModel.getId())
+                        .put("productionYear", carModel.getProductionYear())
+                        .put("milage", carModel.getMilage())
+                        .put("customerId", carModel.getCustomer().getId())
+                        .put("employeeId", carModel.getEmployee().getId())
+                        .put("negotiable", carModel.getNegotiable())
+                        .put("conditionScore", carModel.getConditionScore())
+                        .put("branch", carModel.getBranch())
+                        .put("state", carModel.getState())
+                        .put("price", carModel.getPrice())
+                        .put("launchDate", carModel.getLaunchDate())
+                        .put("carinfoId", carModel.getCarinfo().getId())
+                        .put("color", carModel.getColor())
+                        .put("remark", carModel.getRemark());
+                array = array.put(item);
+                responseBody.put("list", array);
+                return responseBody.toString();
+            } else {
+                responseBody.put("success", false);
+                responseBody.put("message", "ID不存在");
+            }
+        }
+        return responseBody.toString();
+    }
+    // ------------------------------------------------------------------------
 
-    // }
-    // }
-    // }
-    // return responseBody.toString();
-    // }
+    // 新增單筆
+    @PostMapping("/create")
+    public String jsonCreate(@RequestBody String body) {
+        JSONObject reponseBody = new JSONObject();
+        Car car = carService.create(body);
+        if (car == null) {
+            reponseBody.put("success", false);
+            reponseBody.put("message", "新增失敗");
+        } else {
+            reponseBody.put("success", true);
+            reponseBody.put("message", "新增成功");
+        }
+        return reponseBody.toString();
+    }
 
-    // @PutMapping("car/update/{id}")
-    // public String updateData(@PathVariable(name = "id") Integer id, @RequestBody
-    // String body) {
-    // JSONObject responseBody = new JSONObject();
-    // if (id == null) {
-    // responseBody.put("success", false);
-    // responseBody.put("message", "ID是必要欄位");
-    // } else {
-    // if (!tdService.exists(id)) {
-    // responseBody.put("success", false);
-    // responseBody.put("message", "ID不存在");
-    // } else {
-    // TpeData td = tdService.update(body);
-    // if (td == null) {
-    // responseBody.put("success", false);
-    // responseBody.put("message", "修改失敗");
-    // } else {
-    // responseBody.put("success", true);
-    // responseBody.put("message", "修改成功");
-    // }
-    // }
-    // }
-    // return responseBody.toString();
-    // }
+    // 刪除
+    @DeleteMapping("/delete/{id}")
+    public String remove(@PathVariable Integer id) {
+        JSONObject responseBody = new JSONObject();
+        if (!carService.exists(id)) {
+            responseBody.put("success", false);
+            responseBody.put("message", "Id不存在");
+        } else {
+            if (!carService.remove(id)) {
+                responseBody.put("success", false);
+                responseBody.put("message", "刪除失敗");
+            } else {
+                responseBody.put("success", true);
+                responseBody.put("message", "刪除成功");
+            }
+        }
+        return responseBody.toString();
+    }
 
+    // 修改
+    @PutMapping("/modify/{id}")
+    public String modify(@RequestBody String body, @PathVariable(name = "id") Integer Id) {
+        JSONObject responseBody = new JSONObject();
+        if (!carService.exists(Id)) {
+            responseBody.put("success", false);
+            responseBody.put("message", "ID不存在");
+        } else {
+            Car car = carService.modify(body);
+            if (car == null) {
+                responseBody.put("success", false);
+                responseBody.put("message", "修改失敗");
+            } else {
+                responseBody.put("success", true);
+                responseBody.put("message", "修改成功");
+            }
+        }
+        return responseBody.toString();
+    }
 }
