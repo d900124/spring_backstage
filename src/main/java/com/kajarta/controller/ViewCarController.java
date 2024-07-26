@@ -111,12 +111,12 @@ public class ViewCarController {
         return responseBody.toString();
     }
 
-    // 查全
+     //查全
     @GetMapping("/selectAll")
-    public String findByPage(@RequestParam Integer pageNumber) {
+    public String findByPage(@RequestParam Integer pageNumber, @RequestParam Integer max) {
         JSONObject responseBody = new JSONObject();
         JSONArray array = new JSONArray();
-        Page<ViewCar> page = viewCarService.findByPage(pageNumber);
+        Page<ViewCar> page = viewCarService.findByPage(pageNumber, max);
         List<ViewCar> viewCars = page.getContent();
         for (ViewCar viewCar : viewCars) {
             String viewCarDate = DatetimeConverter.toString(viewCar.getViewCarDate(), "yyyy-MM-dd");
@@ -138,13 +138,14 @@ public class ViewCarController {
                     .put("tel", viewCar.getCustomer().getTel())
                     .put("createTime", createTime)
                     .put("updateTime", updateTime)
+                    .put("viewTimeSectionNb", viewCar.getViewTimeSection())
                     .put("viewCarStatus", viewCar.getViewCarStatus());
             array.put(obj);
         }
         responseBody.put("list", array);
         responseBody.put("totalPages", page.getTotalPages());
         responseBody.put("totalElements", page.getTotalElements());
-        responseBody.put("currentPage", page.getNumber() + 1); // Page numbers are 0-based, so we add 1
+        responseBody.put("currentPage", page.getNumber() + 1);  // Page numbers are 0-based, so we add 1
         return responseBody.toString();
     }
 
