@@ -139,7 +139,7 @@ public class ViewCarService {
     }
 
     public Page<ViewCar> findByPage(Integer pageNumeber,  Integer max) {
-        Pageable pgb = PageRequest.of(pageNumeber - 1, max, Sort.Direction.DESC, "updateTime");
+        Pageable pgb = PageRequest.of(pageNumeber - 1, max, Sort.Direction.DESC, "viewCarDate");
         Page<ViewCar> page = viewCarRepo.findAll(pgb);
         return page;
     }
