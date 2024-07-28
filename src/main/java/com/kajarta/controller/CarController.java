@@ -150,9 +150,9 @@ public class CarController {
                         .put("milage", carModel.getMilage())
                         .put("customerId", carModel.getCustomer().getId())
                         .put("employeeId", carModel.getEmployee().getId())
-                        .put("negotiable", negotiableEnum.getPercent())
+                        .put("negotiable", negotiableEnum.getCode())
                         .put("conditionScore", carModel.getConditionScore())
-                        .put("branch", branch.getBranchName())
+                        .put("branch", branch.getCode())
                         .put("state", carModel.getState())
                         .put("price", carModel.getPrice())
                         .put("launchDate", carModel.getLaunchDate())
@@ -292,6 +292,8 @@ public class CarController {
     @PutMapping("/modify/{id}")
     public String modify(@RequestBody String body, @PathVariable(name = "id") Integer Id) {
         JSONObject responseBody = new JSONObject();
+        System.out.println("==========================");
+        System.out.println("Id=" + Id);
         if (!carService.exists(Id)) {
             responseBody.put("success", false);
             responseBody.put("message", "ID不存在");
