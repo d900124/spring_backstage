@@ -2,7 +2,9 @@ package com.kajarta.service.impl;
 
 
 import com.kajarta.demo.dto.LeaveDTO;
+import com.kajarta.demo.enums.LeaveStatusEnum;
 import com.kajarta.demo.enums.LeaveTypeEnum;
+import com.kajarta.demo.enums.PermissionStatusEnum;
 import com.kajarta.demo.model.Employee;
 import com.kajarta.demo.model.Leave;
 import com.kajarta.demo.vo.LeaveVO;
@@ -12,6 +14,7 @@ import com.kajarta.repository.LeaveRepository;
 import com.kajarta.service.EmployeeService;
 import com.kajarta.service.LeaveService;
 import com.kajarta.util.DatetimeConverter;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,19 +145,30 @@ public class LeaveServiceImpl implements LeaveService {
 
     // 新增
     @Override
+    @Transactional
     public LeaveVO create(LeaveVO leaveVO) {
-        Leave leave = new Leave();
-        BeanUtils.copyProperties(leaveVO, leave);
-        // 查詢並設置employee
-        Optional<Employee> employeeOptional = employeeRepo.findById(leaveVO.getEmployeeId());
-        if (!employeeOptional.isPresent()) {
-            throw new RuntimeException("找不到此員工");
+        try {
+            Leave leave = new Leave();
+            BeanUtils.copyProperties(leaveVO, leave);
+            // 查詢並設置employee
+            Optional<Employee> employeeOptional = employeeRepo.findById(leaveVO.getEmployeeId());
+            if (!employeeOptional.isPresent()) {
+                throw new RuntimeException("找不到此員工");
+            }
+            leave.setEmployee(employeeOptional.get());
+            if(leaveVO.getLeaveType() == LeaveStatusEnum.DEDUCT.getCode()){
+                leave.setStartTime(DatetimeConverter.parse(leaveVO.getStartTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+                leave.setEndTime(DatetimeConverter.parse(leaveVO.getEndTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+            }
+            leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+            leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+            leaveRepo.save(leave);
+            LeaveVO leaveVONew = new LeaveVO();
+            BeanUtils.copyProperties(leaveVO, leaveVONew);
+            return leaveVONew;
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
         }
-        leave.setEmployee(employeeOptional.get());
-        leaveRepo.save(leave);
-        LeaveVO leaveVONew = new LeaveVO();
-        BeanUtils.copyProperties(leaveVO, leaveVONew);
-        return leaveVONew;
     }
 
 
@@ -162,6 +176,7 @@ public class LeaveServiceImpl implements LeaveService {
 
 
     @Override
+    @Transactional
     public LeaveVO modify(LeaveVO leaveVO) {
         Optional<Leave> optionalLeave = leaveRepo.findById(leaveVO.getId());
         if (optionalLeave.isPresent()) {
@@ -222,7 +237,33 @@ public class LeaveServiceImpl implements LeaveService {
             }
 
             // 保存修改后的假单
-            leaveRepo.save(leave);
+            Leave savedLeave = leaveRepo.save(leave);
+
+            // 如果新增假單紀錄成功，要判斷是扣除時數或是增加時數
+            // 直接增加時數：請假類型:1-給假、核可狀態:2-同意
+            // 直接扣除時數，在新增員工這邊不會發生：請假類型:0-請假、核可狀態:2-同意
+            if (savedLeave != null) {
+                if (savedLeave.getLeaveStatus() == LeaveStatusEnum.ADD.getCode() && savedLeave.getPermisionStatus() == PermissionStatusEnum.APPROVE.getCode()) {
+                    // 查詢並設置employee
+                    Optional<Employee> employeeOptional = employeeRepo.findById(leaveVO.getEmployeeId());
+                    if (!employeeOptional.isPresent()) {
+                        throw new RuntimeException("找不到此員工");
+                    }
+                    Employee employee = employeeOptional.get();
+                    // 增加時數
+                    updateLeaveHours(leaveVO.getLeaveType(), employee);
+                } else if (savedLeave.getLeaveStatus() == LeaveStatusEnum.DEDUCT.getCode() && savedLeave.getPermisionStatus() == PermissionStatusEnum.APPROVE.getCode()) {
+                    // 查詢並設置employee
+                    Optional<Employee> employeeOptional = employeeRepo.findById(leaveVO.getEmployeeId());
+                    if (!employeeOptional.isPresent()) {
+                        throw new RuntimeException("找不到此員工");
+                    }
+                    Employee employee = employeeOptional.get();
+                    // 扣除時數
+                    updateLeaveHours(leaveVO.getLeaveType(), employee);                }
+            } else {
+                log.error("新增請假紀錄失敗");
+            }
 
             // 将 Leave 对象转换回 LeaveVO
             LeaveVO updateLeaveVO = new LeaveVO();
@@ -233,5 +274,36 @@ public class LeaveServiceImpl implements LeaveService {
         }
     }
 
+    private void updateLeaveHours(Integer leaveType, Employee employee) {
+        switch (leaveType) {
+            case 5:
+                employee.setPersonalLeaveHours(LeaveTypeEnum.PERSONAL.getHoursPolicy());
+                break;
+            case 6:
+                employee.setSickLeaveHours(LeaveTypeEnum.SICK.getHoursPolicy());
+                break;
+            case 7:
+                employee.setMarriageLeaveHours(LeaveTypeEnum.MARRIAGE.getHoursPolicy());
+                break;
+            case 8:
+                employee.setMenstrualLeaveHours(LeaveTypeEnum.MENSTRUAL.getHoursPolicy());
+                break;
+            case 9:
+                employee.setOfficialLeaveHours(LeaveTypeEnum.OFFICIAL.getHoursPolicy());
+                break;
+            case 10:
+                employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_PARENT_OR_SPOUSE.getHoursPolicy());
+                break;
+            case 11:
+                employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_CHILD_OR_GRANDPARENT_OR_SPOUSEPARENT.getHoursPolicy());
+                break;
+            case 12:
+                employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_GREATGRANDPARENT_OR_SIBLING_SPOUSEGRANDPARENT.getHoursPolicy());
+                break;
+            default:
+                System.out.println("Invalid leave type provided.");
+        }
+        employeeRepo.save(employee);
+    }
 
 }
