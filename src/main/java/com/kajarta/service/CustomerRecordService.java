@@ -6,11 +6,13 @@ import java.util.Date;
 import java.util.Optional;
 
 import org.json.JSONObject;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kajarta.demo.model.CustomerRecord;
-import com.kajarta.demo.model.Kpi;
+import com.kajarta.demo.model.Employee;
+import com.kajarta.demo.vo.CustomerRecordVO;
 import com.kajarta.repository.CustomerRecordRepository;
 import com.kajarta.util.DatetimeConverter;
 
@@ -331,6 +333,17 @@ public class CustomerRecordService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // Bean 轉 VO
+    public CustomerRecordVO vOChange(CustomerRecord customerRecord) {
+        CustomerRecordVO customerRecordVO = new CustomerRecordVO();
+
+        BeanUtils.copyProperties(customerRecord, customerRecordVO);
+
+        // 這邊要判斷 (Integer編號寫在VO) no01Care / no02Care / no03Care
+
+        return customerRecordVO;
     }
 
 }
