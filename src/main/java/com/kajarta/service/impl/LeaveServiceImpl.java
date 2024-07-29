@@ -156,12 +156,13 @@ public class LeaveServiceImpl implements LeaveService {
                 throw new RuntimeException("找不到此員工");
             }
             leave.setEmployee(employeeOptional.get());
-            if(leaveVO.getLeaveType() == LeaveStatusEnum.DEDUCT.getCode()){
-                leave.setStartTime(DatetimeConverter.parse(leaveVO.getStartTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
-                leave.setEndTime(DatetimeConverter.parse(leaveVO.getEndTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+            if(leaveVO.getLeaveStatus() == LeaveStatusEnum.DEDUCT.getCode()){
+                leave.setStartTime(DatetimeConverter.parse(leaveVO.getStartTime(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
+                leave.setEndTime(DatetimeConverter.parse(leaveVO.getEndTime(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
+            }else {
+                leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+                leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_HH_MM));
             }
-            leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_HH_MM));
-            leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_HH_MM));
             leaveRepo.save(leave);
             LeaveVO leaveVONew = new LeaveVO();
             BeanUtils.copyProperties(leaveVO, leaveVONew);
@@ -190,10 +191,10 @@ public class LeaveServiceImpl implements LeaveService {
                 }
                 leave.setPermisionStatus(leaveVO.getPermisionStatus());
             }
-            if (leaveVO.getStartTime() != null) {
+            if (leaveVO.getStartTime() != null && leaveVO.getLeaveStatus() == LeaveStatusEnum.DEDUCT.getCode()) {
                 leave.setStartTime(DatetimeConverter.parse(leaveVO.getStartTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
             }
-            if (leaveVO.getEndTime() != null) {
+            if (leaveVO.getEndTime() != null && leaveVO.getLeaveStatus() == LeaveStatusEnum.DEDUCT.getCode()) {
                 leave.setEndTime(DatetimeConverter.parse(leaveVO.getEndTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
             }
             if (leaveVO.getLeaveType() != null) {
@@ -208,9 +209,9 @@ public class LeaveServiceImpl implements LeaveService {
             if (leaveVO.getPermisionRemarks() != null) {
                 leave.setPermisionRemarks(leaveVO.getPermisionRemarks());
             }
-            if (leaveVO.getAuditTime() != null) {
-                leave.setAuditTime(DatetimeConverter.parse(leaveVO.getAuditTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
-            }
+//            if (leaveVO.getAuditTime() != null) {
+//                leave.setAuditTime(DatetimeConverter.parse(leaveVO.getAuditTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+//            }
             if (leaveVO.getReason() != null) {
                 leave.setReason(leaveVO.getReason());
             }
@@ -229,10 +230,10 @@ public class LeaveServiceImpl implements LeaveService {
             if (leaveVO.getUpdateTime() != null) {
                 leave.setUpdateTime(DatetimeConverter.parse(leaveVO.getUpdateTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
             }
-            if (leaveVO.getValidityPeriodStart() != null) {
+            if (leaveVO.getValidityPeriodStart() != null && leaveVO.getLeaveStatus() == LeaveStatusEnum.ADD.getCode()) {
                 leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_HH_MM));
             }
-            if (leaveVO.getValidityPeriodEnd() != null) {
+            if (leaveVO.getValidityPeriodEnd() != null && leaveVO.getLeaveStatus() == LeaveStatusEnum.ADD.getCode()) {
                 leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_HH_MM));
             }
 
@@ -251,7 +252,7 @@ public class LeaveServiceImpl implements LeaveService {
                     }
                     Employee employee = employeeOptional.get();
                     // 增加時數
-                    updateLeaveHours(leaveVO.getLeaveType(), employee);
+                    updateLeaveHours(leaveVO.getLeaveType(), employee, leave, leaveVO.getLeaveStatus());
                 } else if (savedLeave.getLeaveStatus() == LeaveStatusEnum.DEDUCT.getCode() && savedLeave.getPermisionStatus() == PermissionStatusEnum.APPROVE.getCode()) {
                     // 查詢並設置employee
                     Optional<Employee> employeeOptional = employeeRepo.findById(leaveVO.getEmployeeId());
@@ -260,7 +261,7 @@ public class LeaveServiceImpl implements LeaveService {
                     }
                     Employee employee = employeeOptional.get();
                     // 扣除時數
-                    updateLeaveHours(leaveVO.getLeaveType(), employee);                }
+                    updateLeaveHours(leaveVO.getLeaveType(), employee, leave, leaveVO.getLeaveStatus());                }
             } else {
                 log.error("新增請假紀錄失敗");
             }
@@ -274,31 +275,63 @@ public class LeaveServiceImpl implements LeaveService {
         }
     }
 
-    private void updateLeaveHours(Integer leaveType, Employee employee) {
+    private void updateLeaveHours(Integer leaveType, Employee employee, Leave leave, Integer leaveStatus) {
         switch (leaveType) {
             case 5:
-                employee.setPersonalLeaveHours(LeaveTypeEnum.PERSONAL.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setPersonalLeaveHours(employee.getPersonalLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setPersonalLeaveHours(LeaveTypeEnum.PERSONAL.getHoursPolicy());
+                }
                 break;
             case 6:
-                employee.setSickLeaveHours(LeaveTypeEnum.SICK.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setSickLeaveHours(employee.getSickLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setSickLeaveHours(LeaveTypeEnum.SICK.getHoursPolicy());
+                }
                 break;
             case 7:
-                employee.setMarriageLeaveHours(LeaveTypeEnum.MARRIAGE.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setMarriageLeaveHours(employee.getMarriageLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setMarriageLeaveHours(LeaveTypeEnum.MARRIAGE.getHoursPolicy());
+                }
                 break;
             case 8:
-                employee.setMenstrualLeaveHours(LeaveTypeEnum.MENSTRUAL.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setMenstrualLeaveHours(employee.getMenstrualLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setMenstrualLeaveHours(LeaveTypeEnum.MENSTRUAL.getHoursPolicy());
+                }
                 break;
             case 9:
-                employee.setOfficialLeaveHours(LeaveTypeEnum.OFFICIAL.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setOfficialLeaveHours(employee.getOfficialLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setOfficialLeaveHours(LeaveTypeEnum.OFFICIAL.getHoursPolicy());
+                }
                 break;
             case 10:
-                employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_PARENT_OR_SPOUSE.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setBereavementLeaveHours(employee.getBereavementLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_PARENT_OR_SPOUSE.getHoursPolicy());
+                }
                 break;
             case 11:
-                employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_CHILD_OR_GRANDPARENT_OR_SPOUSEPARENT.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setBereavementLeaveHours(employee.getBereavementLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_CHILD_OR_GRANDPARENT_OR_SPOUSEPARENT.getHoursPolicy());
+                }
                 break;
             case 12:
-                employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_GREATGRANDPARENT_OR_SIBLING_SPOUSEGRANDPARENT.getHoursPolicy());
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setBereavementLeaveHours(employee.getBereavementLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setBereavementLeaveHours(LeaveTypeEnum.BEREAVEMENT_GREATGRANDPARENT_OR_SIBLING_SPOUSEGRANDPARENT.getHoursPolicy());
+                }
                 break;
             default:
                 System.out.println("Invalid leave type provided.");
