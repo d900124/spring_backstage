@@ -1,11 +1,14 @@
 package com.kajarta.service.impl;
 
-import com.kajarta.demo.enums.AccountTypeEnum;
-import com.kajarta.demo.enums.BranchEnum;
+import com.kajarta.demo.enums.*;
 import com.kajarta.demo.model.Employee;
+import com.kajarta.demo.model.Leave;
+import com.kajarta.demo.utils.DateUtil;
 import com.kajarta.demo.vo.EmployeeVO;
+import com.kajarta.demo.vo.LeaveVO;
 import com.kajarta.repository.EmployeeRepository;
 import com.kajarta.service.EmployeeService;
+import com.kajarta.service.LeaveService;
 import com.kajarta.util.DatetimeConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +30,10 @@ import java.util.Optional;
 public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepo;
+
+    @Autowired
+    private LeaveService leaveService;
+
 
     @Override
     public Employee getByUsername(String account) {
@@ -119,6 +127,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     // 新增
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public EmployeeVO create(EmployeeVO employeeVO) {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeVO, employee);
@@ -137,15 +146,65 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employee.getUpdateTime() == null) {
             employee.setUpdateTime(now);
         }
-        employeeRepo.save(employee);
+        Employee savedEmployee = employeeRepo.save(employee);
         EmployeeVO employeeVONew = new EmployeeVO();
-        BeanUtils.copyProperties(employee, employeeVONew);
+        BeanUtils.copyProperties(savedEmployee, employeeVONew);
         employeeVONew.setTeamLeaderId(employee.getTeamLeader().getId());
         employeeVONew.setTeamLeaderName(employee.getTeamLeader().getName());
         employeeVO.setCreateTime(DatetimeConverter.toString(new Date(employee.getCreateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM_SS));
         employeeVO.setUpdateTime(DatetimeConverter.toString(new Date(employee.getUpdateTime().getTime()), DatetimeConverter.YYYY_MM_DD_HH_MM_SS));
+
+        // 新增員工，直接給病假
+        // 新增給假紀錄
+        LeaveVO sickLeave = leaveService.create(LeaveVO.builder()
+                .leaveStatus(LeaveStatusEnum.ADD.getCode())
+                .leaveType(LeaveTypeEnum.SICK.getCode())
+                .employeeId(savedEmployee.getId())
+                .teamLeaderId(employeeVO.getTeamLeaderId())
+                .permisionStatus(PermissionStatusEnum.APPROVE.getCode())
+                .permisionRemarks("入職給假")
+                .reason("入職給假")
+                .actualLeaveHours(LeaveTypeEnum.SICK.getHoursPolicy())
+                .validityPeriodStart(DateUtil.getDayStartOfYear())
+                .validityPeriodEnd(DateUtil.getDayEndOfYear())
+                .build());
+        // 如果病假紀錄新增成功，要去employee增加時數
+        if(sickLeave != null){
+            savedEmployee.setSickLeaveHours(LeaveTypeEnum.SICK.getHoursPolicy());
+            employeeRepo.save(savedEmployee);
+        }
+
+        // 新增員工，直接給事假
+        // 新增給假紀錄
+        LeaveVO personalLeave = leaveService.create(LeaveVO.builder()
+                .leaveStatus(LeaveStatusEnum.ADD.getCode())
+                .leaveType(LeaveTypeEnum.PERSONAL.getCode())
+                .employeeId(savedEmployee.getId())
+                .teamLeaderId(employeeVO.getTeamLeaderId())
+                .permisionStatus(PermissionStatusEnum.APPROVE.getCode())
+                .permisionRemarks("入職給假")
+                .reason("入職給假")
+                .actualLeaveHours(LeaveTypeEnum.PERSONAL.getHoursPolicy())
+                .validityPeriodStart(DateUtil.getDayStartOfYear())
+                .validityPeriodEnd(DateUtil.getDayEndOfYear())
+                .build());
+        // 如果病假紀錄新增成功，要去employee增加時數
+        if(personalLeave != null){
+            savedEmployee.setPersonalLeaveHours(LeaveTypeEnum.PERSONAL.getHoursPolicy());
+            employeeRepo.save(savedEmployee);
+        }
+
         return employeeVONew;
     }
+
+    /**
+     * Update 給假或是請假
+     */
+    private EmployeeVO updateLeaveHours(EmployeeVO employeeVO) {
+
+        return null;
+    }
+
 
     // 修改
     @Transactional
