@@ -1,7 +1,6 @@
 package com.kajarta.controller;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +9,9 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kajarta.demo.domian.Result;
@@ -85,5 +84,45 @@ public class CustomerRecordController {
         }
         return responseBody.toString();
 
+    }
+
+    // 修改一筆
+    @Operation(summary = "客戶紀錄-修改一筆 / 不做檢查")
+    @GetMapping("/modify/{id}")
+    public Result<CustomerRecordVO> modify(
+            @Parameter(description = "修改檢查customer ID") @PathVariable Integer id,
+            @RequestParam(required = false) BigDecimal productionYear,
+            @RequestParam(required = false) BigDecimal price,
+            @RequestParam(required = false) BigDecimal milage,
+            @RequestParam(required = false) BigDecimal score,
+            @RequestParam(required = false) BigDecimal hp,
+            @RequestParam(required = false) BigDecimal torque,
+            @RequestParam(required = false) Integer brand,
+            @RequestParam(required = false) Integer suspension,
+            @RequestParam(required = false) Integer door,
+            @RequestParam(required = false) Integer passenger,
+            @RequestParam(required = false) Integer rearwheel,
+            @RequestParam(required = false) Integer gasoline,
+            @RequestParam(required = false) Integer transmission,
+            @RequestParam(required = false) Integer cc) {
+
+        if (id == null) {
+            return ResultUtil.error("customer ID是必要欄位");
+        } else {
+            if (customerRecordService.findById(id) == null) {
+                return ResultUtil.error("customer ID不存在");
+            } else {
+                CustomerRecord customerRecord = customerRecordService.modify(id, productionYear, price, milage,
+                        score, hp, torque, brand, suspension, door, passenger, rearwheel, gasoline, transmission, cc);
+                if (customerRecord == null) {
+                    return ResultUtil.error("CustomerRecord 修改失敗");
+                } else {
+
+                    CustomerRecordVO customerRecordVO = customerRecordService.vOChange(customerRecord);
+
+                    return ResultUtil.success(customerRecordVO);
+                }
+            }
+        }
     }
 }
