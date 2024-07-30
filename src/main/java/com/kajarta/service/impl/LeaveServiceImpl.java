@@ -209,9 +209,6 @@ public class LeaveServiceImpl implements LeaveService {
             if (leaveVO.getPermisionRemarks() != null) {
                 leave.setPermisionRemarks(leaveVO.getPermisionRemarks());
             }
-//            if (leaveVO.getAuditTime() != null) {
-//                leave.setAuditTime(DatetimeConverter.parse(leaveVO.getAuditTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
-//            }
             if (leaveVO.getReason() != null) {
                 leave.setReason(leaveVO.getReason());
             }
