@@ -1,6 +1,7 @@
 package com.kajarta.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -118,21 +119,30 @@ public class CarService {
         try {
             JSONObject obj = new JSONObject(json);
             Integer id = obj.isNull("id") ? null : obj.getInt("id");
-            Integer productionYear = obj.isNull("productionYear") ? null : obj.getInt("productionYear");
-            Integer milage = obj.isNull("milage") ? null : obj.getInt("milage");
-            Integer negotiable = obj.isNull("negotiable") ? null : obj.getInt("negotiable");
-            Integer conditionScore = obj.isNull("conditionScore") ? null : obj.getInt("conditionScore");
-            Integer branch = obj.isNull("branch") ? null : obj.getInt("branch");
-            Integer state = obj.isNull("state") ? null : obj.getInt("state");
-            BigDecimal price = obj.isNull("price") ? null : obj.getBigDecimal("price");
-            String launchDate = obj.isNull("launchDate") ? null : obj.getString("launchDate");
-            String color = obj.isNull("color") ? null : obj.getString("color");
-            Integer remark = obj.isNull("remark") ? null : obj.getInt("remark");
-            Customer c = customerService.findById(id);
-            Employee e = employeeService.findById(id);
-            Carinfo carinfo = carInfoService.findById(id);
-
             Optional<Car> optional = carRepo.findById(id);
+
+            Integer productionYear = obj.isNull("productionYear") ? optional.get().getProductionYear()
+                    : obj.getInt("productionYear");
+            Integer milage = obj.isNull("milage") ? optional.get().getMilage() : obj.getInt("milage");
+            Integer negotiable = obj.isNull("negotiable") ? optional.get().getNegotiable() : obj.getInt("negotiable");
+            Integer conditionScore = obj.isNull("conditionScore") ? optional.get().getConditionScore()
+                    : obj.getInt("conditionScore");
+            Integer branch = obj.isNull("branch") ? optional.get().getBranch() : obj.getInt("branch");
+            Integer state = obj.isNull("state") ? optional.get().getState() : obj.getInt("state");
+            BigDecimal price = obj.isNull("price") ? optional.get().getPrice() : obj.getBigDecimal("price");
+            String launchDate = obj.isNull("launchDate") ? optional.get().getLaunchDate().toString()
+                    : obj.getString("launchDate");
+            String color = obj.isNull("color") ? optional.get().getColor() : obj.getString("color");
+            Integer remark = obj.isNull("remark") ? optional.get().getRemark() : obj.getInt("remark");
+            Integer customerId = obj.isNull("customerId") ? optional.get().getCustomer().getId()
+                    : obj.getInt("customerId");
+            Integer employeeId = obj.isNull("employeeId") ? optional.get().getEmployee().getId()
+                    : obj.getInt("employeeId");
+            Integer carinfoId = obj.isNull("carinfoId") ? optional.get().getCarinfo().getId() : obj.getInt("carinfoId");
+            Customer c = customerService.findById(customerId);
+            Employee e = employeeService.findById(employeeId);
+            Carinfo carinfo = carInfoService.findById(carinfoId);
+
             if (optional.isPresent()) {
                 Car update = optional.get();
                 update.setProductionYear(productionYear);
@@ -161,5 +171,12 @@ public class CarService {
         Sort.Direction direction = Sort.Direction.fromString(sortOrder);
         Pageable pageable = PageRequest.of(pageNumber - 1, max, direction, "createTime");
         return carRepo.findAll(pageable);
+    }
+
+
+
+     // 查找指定时间后的新增车辆
+    public List<Car> findCarsAddedAfter(LocalDateTime since) {
+        return carRepo.findByCreateTimeAfter(since);
     }
 }
