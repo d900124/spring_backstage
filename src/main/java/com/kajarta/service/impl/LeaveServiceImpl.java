@@ -160,8 +160,8 @@ public class LeaveServiceImpl implements LeaveService {
                 leave.setStartTime(DatetimeConverter.parse(leaveVO.getStartTime(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
                 leave.setEndTime(DatetimeConverter.parse(leaveVO.getEndTime(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
             }else {
-                leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_HH_MM));
-                leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+                leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
+                leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
             }
             leaveRepo.save(leave);
             LeaveVO leaveVONew = new LeaveVO();
