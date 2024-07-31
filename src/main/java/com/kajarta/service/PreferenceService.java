@@ -241,11 +241,16 @@ public class PreferenceService {
         return false;
     }
 
-    // 動態查詢
-    public List<Car> searchPreferencesCarJoinCarinfo(String modelName, Integer productionYear, BigDecimal price,
-            Integer milage, Integer score, Integer hp, Double torque) {
+    // 動態查詢Car
+    public List<Car> searchPreferencesCarJoinCarinfo(String carinfoId, String modelName, Integer productionYear,
+            BigDecimal price,
+            Integer milage, Integer score, Integer hp, String torque, Integer brand, Integer suspension, Integer door,
+            Integer passenger, Integer rearwheel, Integer gasoline, Integer transmission, Integer cc) {
+
         return carRepo.findAll(
-                CarSpecification.dynamicSearch(modelName, productionYear, price, milage, score, hp, torque));
+                CarSpecification.dynamicSearch(carinfoId, modelName, productionYear, price, milage, score, hp, torque,
+                        brand,
+                        suspension, door, passenger, rearwheel, gasoline, transmission, cc));
     }
 
 }
