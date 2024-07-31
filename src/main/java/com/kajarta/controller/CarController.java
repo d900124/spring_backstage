@@ -334,6 +334,7 @@ public String findNewCars(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO
                 .put("price", car.getPrice())
                 .put("launchDate", car.getLaunchDate())
                 .put("carinfoId", car.getCarinfo().getId())
+                .put("carinfoModelName", car.getCarinfo().getModelName())
                 .put("color", car.getColor())
                 .put("remark", car.getRemark())
                 .put("createTime", createTime)
