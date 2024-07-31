@@ -160,10 +160,23 @@ public class LeaveServiceImpl implements LeaveService {
                 leave.setStartTime(DatetimeConverter.parse(leaveVO.getStartTime(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
                 leave.setEndTime(DatetimeConverter.parse(leaveVO.getEndTime(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
             }else {
-                leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_HH_MM));
-                leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_HH_MM));
+                leave.setValidityPeriodStart(DatetimeConverter.parse(leaveVO.getValidityPeriodStart(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
+                leave.setValidityPeriodEnd(DatetimeConverter.parse(leaveVO.getValidityPeriodEnd(), DatetimeConverter.YYYY_MM_DD_T_HH_MM));
             }
-            leaveRepo.save(leave);
+            Leave savedLeave = leaveRepo.save(leave);
+            // 如果新增假單紀錄成功，要判斷是扣除時數或是增加時數
+            // 直接增加時數：請假類型:1-給假、核可狀態:2-同意
+            // 直接扣除時數，在新增員工這邊不會發生：請假類型:0-請假、核可狀態:2-同意
+            if (savedLeave != null) {
+                if (savedLeave.getLeaveStatus() == LeaveStatusEnum.ADD.getCode()) {
+                    Employee employee = employeeOptional.get();
+                    // 增加時數
+                    updateLeaveHours(leaveVO.getLeaveType(), employee, leave, leaveVO.getLeaveStatus());
+                }
+            } else {
+                log.error("新增請假/給假紀錄失敗");
+            }
+
             LeaveVO leaveVONew = new LeaveVO();
             BeanUtils.copyProperties(leaveVO, leaveVONew);
             return leaveVONew;
@@ -209,9 +222,6 @@ public class LeaveServiceImpl implements LeaveService {
             if (leaveVO.getPermisionRemarks() != null) {
                 leave.setPermisionRemarks(leaveVO.getPermisionRemarks());
             }
-//            if (leaveVO.getAuditTime() != null) {
-//                leave.setAuditTime(DatetimeConverter.parse(leaveVO.getAuditTime(), DatetimeConverter.YYYY_MM_DD_HH_MM));
-//            }
             if (leaveVO.getReason() != null) {
                 leave.setReason(leaveVO.getReason());
             }
