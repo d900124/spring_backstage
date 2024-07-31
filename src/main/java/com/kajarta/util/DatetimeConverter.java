@@ -6,6 +6,7 @@ import java.util.Date;
 public class DatetimeConverter {
 	public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
 	public static final String YYYY_MM_DD_HH_MM = "yyyy-MM-dd HH:mm";
+	public static final String YYYY_MM_DD_T_HH_MM = "yyyy-MM-dd'T'HH:mm";
 	public static String toString(Date datetime, String format) {
 		String result = "";
 		try {
