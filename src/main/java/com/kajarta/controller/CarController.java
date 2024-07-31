@@ -313,34 +313,5 @@ public class CarController {
     }
 
 
-    // 查找指定时间后的新增车辆
-@GetMapping("/new-cars")
-public String findNewCars(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since) {
-    List<Car> newCars = carService.findCarsAddedAfter(since);
-    JSONArray array = new JSONArray();
-    for (Car car : newCars) {
-        String createTime = DatetimeConverter.toString(car.getCreateTime(), "yyyy-MM-dd");
-        String updateTime = DatetimeConverter.toString(car.getUpdateTime(), "yyyy-MM-dd");
-        JSONObject item = new JSONObject()
-                .put("id", car.getId())
-                .put("productionYear", car.getProductionYear())
-                .put("milage", car.getMilage())
-                .put("customerId", car.getCustomer().getId())
-                .put("employeeId", car.getEmployee().getId())
-                .put("negotiable", car.getNegotiable())
-                .put("conditionScore", car.getConditionScore())
-                .put("branch", car.getBranch())
-                .put("state", car.getState())
-                .put("price", car.getPrice())
-                .put("launchDate", car.getLaunchDate())
-                .put("carinfoId", car.getCarinfo().getId())
-                .put("carinfoModelName", car.getCarinfo().getModelName())
-                .put("color", car.getColor())
-                .put("remark", car.getRemark())
-                .put("createTime", createTime)
-                .put("updateTime", updateTime);
-        array.put(item);
-    }
-    return array.toString();
-}
+    
 }
