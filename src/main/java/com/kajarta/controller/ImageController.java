@@ -95,6 +95,27 @@ public class ImageController {
         return result;
     }
 
+    // 查是否為主圖
+    @GetMapping(path = "/isMainPic/{carId}")
+    public String isMainPic(@PathVariable(name = "carId") Integer photoid) {
+        JSONObject responseBody = new JSONObject();
+        JSONArray array = new JSONArray();
+        for (Image image : imageService.findByCarId(photoid)) {
+            String imageUrl = "/kajarta/image/getImage/" + image.getId();
+            JSONObject item = new JSONObject()
+                    .put("id", image.getId())
+                    .put("image", imageUrl)
+                    .put("car", image.getCar().getId())
+                    .put("createTime", image.getCreateTime())
+                    .put("updateTime", image.getUpdateTime())
+                    .put("isListPic", image.getIsListPic())
+                    .put("isMainPic", image.getIsMainPic());
+            array.put(item);
+        }
+        return responseBody.put("CarIdImageList", array).toString();
+    }
+    // 查是否為清單圖
+
     // 以CarId顯示圖片(多張)
     @GetMapping(path = "/getCarIdImage/{carId}")
     public String getCarIdImage(@PathVariable(name = "carId") Integer photoid) {

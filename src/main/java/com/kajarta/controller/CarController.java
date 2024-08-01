@@ -27,6 +27,7 @@ import com.kajarta.demo.model.Car;
 import com.kajarta.demo.model.Carinfo;
 import com.kajarta.demo.model.Displacement;
 import com.kajarta.demo.model.Door;
+import com.kajarta.demo.model.Employee;
 import com.kajarta.demo.model.Gasoline;
 import com.kajarta.demo.model.Negotiable;
 import com.kajarta.demo.model.Passenger;
@@ -39,6 +40,7 @@ import com.kajarta.service.CarInfoService;
 import com.kajarta.service.CarService;
 import com.kajarta.service.DisplacementService;
 import com.kajarta.service.DoorService;
+import com.kajarta.service.EmployeeService;
 import com.kajarta.service.GasolineService;
 import com.kajarta.service.NegotiableService;
 import com.kajarta.service.PassengerService;
@@ -84,6 +86,9 @@ public class CarController {
     @Autowired
     private DisplacementService displacementService;
 
+    @Autowired
+    private EmployeeService employeeService;
+
     // 查全部
     @GetMapping("/findAll")
     public String findAll(@RequestParam Integer pageNumber,
@@ -96,19 +101,37 @@ public class CarController {
         for (Car car : Cars) {
             String createTime = DatetimeConverter.toString(car.getCreateTime(), "yyyy-MM-dd");
             String updateTime = DatetimeConverter.toString(car.getUpdateTime(), "yyyy-MM-dd");
+            Brand brandEnum = brandService.findById(car.getCarinfo().getBrand());
+            Employee employee = employeeService.findById(car.getEmployee().getId());
+            Integer stateCode = car.getState();
+            String state = "無狀態";
+            if (stateCode == 1) {
+                state = "草稿";
+            } else if (stateCode == 2) {
+                state = "上架";
+            } else if (stateCode == 3) {
+                state = "下架";
+            } else if (stateCode == 4) {
+                state = "暫時下架";
+            }
+
             JSONObject item = new JSONObject()
                     .put("id", car.getId())
                     .put("productionYear", car.getProductionYear())
                     .put("milage", car.getMilage())
                     .put("customerId", car.getCustomer().getId())
                     .put("employeeId", car.getEmployee().getId())
+                    .put("employeeName", employee.getName())
                     .put("negotiable", car.getNegotiable())
                     .put("conditionScore", car.getConditionScore())
                     .put("branch", car.getBranch())
                     .put("state", car.getState())
+                    .put("stateName", state)
                     .put("price", car.getPrice())
                     .put("launchDate", car.getLaunchDate())
                     .put("carinfoId", car.getCarinfo().getId())
+                    .put("carinfoModelName", car.getCarinfo().getModelName())
+                    .put("cainfoBrand", brandEnum.getBrand())
                     .put("color", car.getColor())
                     .put("remark", car.getRemark())
                     .put("createTime", createTime)
