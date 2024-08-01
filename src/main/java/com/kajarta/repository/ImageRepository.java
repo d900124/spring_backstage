@@ -15,7 +15,7 @@ public interface ImageRepository extends JpaRepository<Image, Integer> {
     List<Image> findByCarId(Integer id);
 
     @Query(value = "SELECT * FROM image WHERE car_id=:id AND is_main_pic=1", nativeQuery = true)
-    List<Image> findIsMainPic(Integer id);
+    Image findIsMainPic(Integer id);
 
     @Query(value = "SELECT * FROM image WHERE car_id=:id AND is_list_pic=1", nativeQuery = true)
     List<Image> findIsListPic(Integer id);

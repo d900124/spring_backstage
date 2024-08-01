@@ -5,6 +5,7 @@ import com.kajarta.service.ImageService;
 
 import java.util.List;
 
+import org.bson.json.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,22 +100,24 @@ public class ImageController {
     @GetMapping(path = "/isMainPic/{carId}")
     public String isMainPic(@PathVariable(name = "carId") Integer photoid) {
         JSONObject responseBody = new JSONObject();
+        Image image = imageService.findIsMainPic(photoid);
+        String imageUrl = "/kajarta/image/getImage/" + image.getId();
+        return responseBody.put("isMainPic", imageUrl).toString();
+    }
+
+    // 查是否為清單圖
+    @GetMapping(path = "/isListPic/{carId}")
+    public String isListPic(@PathVariable(name = "carId") Integer photoid) {
+        JSONObject responseBody = new JSONObject();
         JSONArray array = new JSONArray();
-        for (Image image : imageService.findByCarId(photoid)) {
+        for (Image image : imageService.findIsListPic(photoid)) {
             String imageUrl = "/kajarta/image/getImage/" + image.getId();
             JSONObject item = new JSONObject()
-                    .put("id", image.getId())
-                    .put("image", imageUrl)
-                    .put("car", image.getCar().getId())
-                    .put("createTime", image.getCreateTime())
-                    .put("updateTime", image.getUpdateTime())
-                    .put("isListPic", image.getIsListPic())
-                    .put("isMainPic", image.getIsMainPic());
+                    .put(imageUrl, imageUrl);
             array.put(item);
         }
-        return responseBody.put("CarIdImageList", array).toString();
+        return responseBody.put("isListPic", array).toString();
     }
-    // 查是否為清單圖
 
     // 以CarId顯示圖片(多張)
     @GetMapping(path = "/getCarIdImage/{carId}")

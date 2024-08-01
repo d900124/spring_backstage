@@ -34,7 +34,7 @@ public class ImageService {
     }
 
     // 查是否為主圖
-    public List<Image> findIsMainPic(Integer Id) {
+    public Image findIsMainPic(Integer Id) {
         return imageRepo.findIsMainPic(Id);
     }
 
