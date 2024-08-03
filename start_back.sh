@@ -12,3 +12,7 @@ netstat -aon | findstr :8080
 
 #kill 服務
 taskkill /PID 8080 /F
+
+#查看log
+Get-Content -Path ".\output.log" -Tail 200 -Wait
+
