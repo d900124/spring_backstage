@@ -45,6 +45,11 @@ public class PreferenceController {
     @Autowired
     private CarInfoService carinfoService;
 
+
+
+
+    
+
     @GetMapping("/find/{Id}") // 查單筆ID
     @ResponseBody
     public String findDataById(@PathVariable(name = "Id") Integer Id) {
