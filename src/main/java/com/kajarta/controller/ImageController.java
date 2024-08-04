@@ -5,6 +5,7 @@ import com.kajarta.service.ImageService;
 
 import java.util.List;
 
+import org.bson.json.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,32 @@ public class ImageController {
         return result;
     }
 
+    // 查是否為主圖
+    @GetMapping(path = "/isMainPic/{carId}")
+    public String isMainPic(@PathVariable(name = "carId") Integer photoid) {
+        JSONObject responseBody = new JSONObject();
+        Image image = imageService.findIsMainPic(photoid) == null ? null : imageService.findIsMainPic(photoid);
+        if (image == null) {
+            return responseBody.put("isMainPic", "沒有這張圖").toString();
+        } else {
+            return responseBody.put("isMainPic", image.getId()).toString();
+
+        }
+    }
+
+    // 查是否為清單圖
+    @GetMapping(path = "/isListPic/{carId}")
+    public String isListPic(@PathVariable(name = "carId") Integer photoid) {
+        JSONObject responseBody = new JSONObject();
+        JSONArray array = new JSONArray();
+        for (Image image : imageService.findIsListPic(photoid)) {
+            JSONObject item = new JSONObject()
+                    .put("imageId", image.getId());
+            array.put(item);
+        }
+        return responseBody.put("isListPic", array).toString();
+    }
+
     // 以CarId顯示圖片(多張)
     @GetMapping(path = "/getCarIdImage/{carId}")
     public String getCarIdImage(@PathVariable(name = "carId") Integer photoid) {
@@ -167,10 +194,10 @@ public class ImageController {
     // 修改
     @PutMapping("/modify/{id}")
     public String modify(@PathVariable(name = "id") Integer Id,
-            @RequestParam("image") MultipartFile imageFile,
-            @RequestParam("carId") Integer carId,
-            @RequestParam("isListPic") Integer isListPic,
-            @RequestParam("isMainPic") Integer isMainPic) {
+            @RequestParam(name = "image", required = false) MultipartFile imageFile,
+            @RequestParam(name = "carId", required = false) Integer carId,
+            @RequestParam(name = "isListPic", required = false) Integer isListPic,
+            @RequestParam(name = "isMainPic", required = false) Integer isMainPic) {
         JSONObject responseBody = new JSONObject();
         if (Id == null) {
             responseBody.put("success", false);
@@ -182,15 +209,17 @@ public class ImageController {
             } else {
                 try {
                     byte[] imageByte = imageFile.getBytes();
+
                     JSONObject item = new JSONObject()
                             .put("id", Id)
                             .put("carId", carId)
                             .put("isListPic", isListPic)
                             .put("isMainPic", isMainPic);
                     Image modifyImage = imageService.modify(item.toString(), imageByte);
+
                     responseBody.put("success", true);
                     responseBody.put("message", "修改成功");
-                    responseBody.put("message", modifyImage);
+                    responseBody.put("message", modifyImage.getId());
                 } catch (Exception e) {
                     e.printStackTrace();
                     responseBody.put("success", false);

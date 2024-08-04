@@ -33,6 +33,16 @@ public class ImageService {
         return imageRepo.findAll();
     }
 
+    // 查是否為主圖
+    public Image findIsMainPic(Integer Id) {
+        return imageRepo.findIsMainPic(Id);
+    }
+
+    // 查是否為清單圖
+    public List<Image> findIsListPic(Integer Id) {
+        return imageRepo.findIsListPic(Id);
+    }
+
     // 查ID
     public Image findById(Integer Id) {
         Optional<Image> optional = imageRepo.findById(Id);
@@ -96,12 +106,14 @@ public class ImageService {
             JSONObject obj = new JSONObject(json);
 
             Integer id = obj.isNull("id") ? null : obj.getInt("id");
-            Integer carId = obj.isNull("carId") ? null : obj.getInt("carId");
-            Integer isListPic = obj.isNull("isListPic") ? null : obj.getInt("isListPic");
-            Integer isMainPic = obj.isNull("isMainPic") ? null : obj.getInt("isMainPic");
+            Optional<Image> optional = imageRepo.findById(id);
+            System.out.println("carID=" + optional.get().getCar().getId());
+            Integer carId = obj.isNull("carId") ? optional.get().getCar().getId() : obj.getInt("carId");
+            Integer isListPic = obj.isNull("isListPic") ? optional.get().getIsListPic() : obj.getInt("isListPic");
+            Integer isMainPic = obj.isNull("isMainPic") ? optional.get().getIsMainPic() : obj.getInt("isMainPic");
+
             Car car = carService.findById(carId);
 
-            Optional<Image> optional = imageRepo.findById(id);
             if (optional.isPresent()) {
                 Image update = optional.get();
                 update.setImage(image);

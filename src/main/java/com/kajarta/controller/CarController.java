@@ -27,6 +27,7 @@ import com.kajarta.demo.model.Car;
 import com.kajarta.demo.model.Carinfo;
 import com.kajarta.demo.model.Displacement;
 import com.kajarta.demo.model.Door;
+import com.kajarta.demo.model.Employee;
 import com.kajarta.demo.model.Gasoline;
 import com.kajarta.demo.model.Negotiable;
 import com.kajarta.demo.model.Passenger;
@@ -39,6 +40,7 @@ import com.kajarta.service.CarInfoService;
 import com.kajarta.service.CarService;
 import com.kajarta.service.DisplacementService;
 import com.kajarta.service.DoorService;
+import com.kajarta.service.EmployeeService;
 import com.kajarta.service.GasolineService;
 import com.kajarta.service.NegotiableService;
 import com.kajarta.service.PassengerService;
@@ -84,6 +86,9 @@ public class CarController {
     @Autowired
     private DisplacementService displacementService;
 
+    @Autowired
+    private EmployeeService employeeService;
+
     // 查全部
     @GetMapping("/findAll")
     public String findAll(@RequestParam Integer pageNumber,
@@ -96,19 +101,37 @@ public class CarController {
         for (Car car : Cars) {
             String createTime = DatetimeConverter.toString(car.getCreateTime(), "yyyy-MM-dd");
             String updateTime = DatetimeConverter.toString(car.getUpdateTime(), "yyyy-MM-dd");
+            Brand brandEnum = brandService.findById(car.getCarinfo().getBrand());
+            Employee employee = employeeService.findById(car.getEmployee().getId());
+            Integer stateCode = car.getState();
+            String state = "無狀態";
+            if (stateCode == 1) {
+                state = "草稿";
+            } else if (stateCode == 2) {
+                state = "上架";
+            } else if (stateCode == 3) {
+                state = "下架";
+            } else if (stateCode == 4) {
+                state = "暫時下架";
+            }
+
             JSONObject item = new JSONObject()
                     .put("id", car.getId())
                     .put("productionYear", car.getProductionYear())
                     .put("milage", car.getMilage())
                     .put("customerId", car.getCustomer().getId())
                     .put("employeeId", car.getEmployee().getId())
+                    .put("employeeName", employee.getName())
                     .put("negotiable", car.getNegotiable())
                     .put("conditionScore", car.getConditionScore())
                     .put("branch", car.getBranch())
                     .put("state", car.getState())
+                    .put("stateName", state)
                     .put("price", car.getPrice())
                     .put("launchDate", car.getLaunchDate())
                     .put("carinfoId", car.getCarinfo().getId())
+                    .put("carinfoModelName", car.getCarinfo().getModelName())
+                    .put("cainfoBrand", brandEnum.getBrand())
                     .put("color", car.getColor())
                     .put("remark", car.getRemark())
                     .put("createTime", createTime)
@@ -118,6 +141,67 @@ public class CarController {
         responseBody.put("list", array);
         responseBody.put("totalPages", carPage.getTotalPages());
         responseBody.put("totalElements", carPage.getTotalElements());
+        return responseBody.toString();
+    }
+
+    // CustomerId查詢單筆
+    @GetMapping("/findCustomerId/{Id}")
+    @ResponseBody
+    public String findDataByCustomerId(@PathVariable(name = "Id") Integer Id) {
+        JSONObject responseBody = new JSONObject();
+        JSONArray array = new JSONArray();
+        if (Id == null) {
+            responseBody.put("success", false);
+            responseBody.put("message", "ID不得為空");
+        } else {
+            List<Car> carList = carService.findByCustomerId(Id);
+            for (Car car : carList) {
+                Carinfo carInfoBean = carInfoService.findById(car.getCarinfo().getId());
+                Brand brandEnum = brandService.findById(carInfoBean.getBrand());
+                Negotiable negotiableEnum = negotiableService.findById(car.getNegotiable());
+                Suspension suspensionEnum = suspensionService.findById(carInfoBean.getSuspension());
+                Door doorEnum = doorService.findById(carInfoBean.getDoor());
+                Passenger passengerEnum = passengerService.findById(carInfoBean.getPassenger());
+                Rearwheel rearwheelEnum = rearWheelService.findById(carInfoBean.getRearwheel());
+                Gasoline gasolineEnum = gasolineService.findById(carInfoBean.getGasoline());
+                Transmission transmissionEnum = transmissionService.findById(carInfoBean.getTransmission());
+                Displacement displacementEnum = displacementService.findById(carInfoBean.getCc());
+                BranchEnum branch = BranchEnum.getByCode(car.getBranch());
+
+                Car carModel = car;
+                JSONObject carJson = new JSONObject()
+                        .put("id", carModel.getId())
+                        .put("productionYear", carModel.getProductionYear())
+                        .put("milage", carModel.getMilage())
+                        .put("customerId", carModel.getCustomer().getId())
+                        .put("employeeId", carModel.getEmployee().getId())
+                        .put("negotiable", negotiableEnum.getPercent())
+                        .put("conditionScore", carModel.getConditionScore())
+                        .put("branch", branch.getBranchName())
+                        .put("state", carModel.getState())
+                        .put("price", carModel.getPrice())
+                        .put("launchDate", carModel.getLaunchDate())
+                        .put("color", carModel.getColor())
+                        .put("remark", carModel.getRemark())
+                        // CarInfo的值
+                        .put("carinfoId", carModel.getCarinfo().getId())
+                        .put("carinfoBrand", brandEnum.getBrand())
+                        .put("carinfoModelName", carInfoBean.getModelName())
+                        .put("carinfoSuspension", suspensionEnum.getType())
+                        .put("carinfoDoor", doorEnum.getCardoor())
+                        .put("carinfoPassenger", passengerEnum.getSeat())
+                        .put("carinfoRearWheel", rearwheelEnum.getWheel())
+                        .put("carinfoGasoline", gasolineEnum.getGaso())
+                        .put("carinfoTransmission", transmissionEnum.getTrans())
+                        .put("carinfoCc", displacementEnum.getCc())
+                        .put("carinfoHp", carInfoBean.getHp())
+                        .put("carinfoTorque", carInfoBean.getTorque())
+                        .put("carinfoCreateTime", carInfoBean.getCreateTime())
+                        .put("carinfoUpdateTime", carInfoBean.getUpdateTime());
+                array = array.put(carJson);
+            }
+            responseBody.put("list", array);
+        }
         return responseBody.toString();
     }
 
@@ -312,6 +396,34 @@ public class CarController {
         return responseBody.toString();
     }
 
-
-    
+    // 查找指定时间后的新增车辆
+    @GetMapping("/new-cars")
+    public String findNewCars(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since) {
+        List<Car> newCars = carService.findCarsAddedAfter(since);
+        JSONArray array = new JSONArray();
+        for (Car car : newCars) {
+            String createTime = DatetimeConverter.toString(car.getCreateTime(), "yyyy-MM-dd");
+            String updateTime = DatetimeConverter.toString(car.getUpdateTime(), "yyyy-MM-dd");
+            JSONObject item = new JSONObject()
+                    .put("id", car.getId())
+                    .put("productionYear", car.getProductionYear())
+                    .put("milage", car.getMilage())
+                    .put("customerId", car.getCustomer().getId())
+                    .put("employeeId", car.getEmployee().getId())
+                    .put("negotiable", car.getNegotiable())
+                    .put("conditionScore", car.getConditionScore())
+                    .put("branch", car.getBranch())
+                    .put("state", car.getState())
+                    .put("price", car.getPrice())
+                    .put("launchDate", car.getLaunchDate())
+                    .put("carinfoId", car.getCarinfo().getId())
+                    .put("carinfoModelName", car.getCarinfo().getModelName())
+                    .put("color", car.getColor())
+                    .put("remark", car.getRemark())
+                    .put("createTime", createTime)
+                    .put("updateTime", updateTime);
+            array.put(item);
+        }
+        return array.toString();
+    }
 }

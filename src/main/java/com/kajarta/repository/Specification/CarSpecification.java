@@ -15,8 +15,10 @@ import jakarta.persistence.criteria.Predicate;
 
 public class CarSpecification {
 
-    public static Specification<Car> dynamicSearch(String modelName, Integer productionYear, BigDecimal price,
-            Integer milage, Integer score, Integer hp, Double torque) {
+    public static Specification<Car> dynamicSearch(String carinfoId, String modelName, Integer productionYear,
+            BigDecimal price,
+            Integer milage, Integer score, Integer hp, String torque, Integer brand, Integer suspension, Integer door,
+            Integer passenger, Integer rearwheel, Integer gasoline, Integer transmission, Integer cc) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -24,6 +26,9 @@ public class CarSpecification {
             Join<Car, Carinfo> carinfoJoin = root.join("carinfo", JoinType.LEFT);
 
             // 添加查询条件
+            if (carinfoId != null && !carinfoId.isEmpty()) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("id")), "%" + carinfoId + "%"));
+            }
             if (modelName != null && !modelName.isEmpty()) {
                 predicates.add(cb.like(carinfoJoin.get("modelName"), "%" + modelName + "%"));
             }
@@ -43,12 +48,44 @@ public class CarSpecification {
                 predicates.add(cb.like(cb.toString(carinfoJoin.get("hp")), "%" + hp + "%"));
             }
             if (torque != null) {
-                predicates.add(cb.like(cb.toString(carinfoJoin.get("torque")), "%" + torque + "%"));
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("torque")), "%" +
+                        torque + "%"));
+            }
+            if (brand != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("brand")), "%" + brand +
+                        "%"));
+            }
+            if (suspension != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("suspension")), "%" +
+                        suspension + "%"));
+            }
+            if (door != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("door")), "%" + door +
+                        "%"));
+            }
+            if (passenger != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("passenger")), "%" +
+                        passenger + "%"));
+            }
+            if (rearwheel != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("rearwheel")), "%" +
+                        rearwheel + "%"));
+            }
+            if (gasoline != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("gasoline")), "%" +
+                        gasoline + "%"));
+            }
+            if (transmission != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("transmission")), "%" +
+                        transmission + "%"));
+            }
+            if (cc != null) {
+                predicates.add(cb.like(cb.toString(carinfoJoin.get("cc")), "%" + cc + "%"));
             }
 
+            query.distinct(true);
             // 返回所有条件
             return cb.and(predicates.toArray(new Predicate[0]));
-
         };
     }
 }
