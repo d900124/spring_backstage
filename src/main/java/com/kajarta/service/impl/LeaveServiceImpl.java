@@ -287,6 +287,35 @@ public class LeaveServiceImpl implements LeaveService {
 
     private void updateLeaveHours(Integer leaveType, Employee employee, Leave leave, Integer leaveStatus) {
         switch (leaveType) {
+            case 1:
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setAnnualLeaveHours(employee.getAnnualLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setAnnualLeaveHours(LeaveTypeEnum.ANNUAL_HALF_YEAR.getHoursPolicy());
+                }
+                break;
+            case 2:
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setAnnualLeaveHours(employee.getAnnualLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setAnnualLeaveHours(LeaveTypeEnum.ANNUAL_ONE_YEAR.getHoursPolicy());
+                }
+                break;
+            case 3:
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setAnnualLeaveHours(employee.getAnnualLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setAnnualLeaveHours(LeaveTypeEnum.ANNUAL_TWO_YEARS.getHoursPolicy());
+                }
+                break;
+            case 4:
+                if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
+                    employee.setAnnualLeaveHours(employee.getAnnualLeaveHours() - leave.getActualLeaveHours());
+                } else {
+                    employee.setAnnualLeaveHours(LeaveTypeEnum.ANNUAL_THREE_OR_FOUR_YEARS.getHoursPolicy());
+                }
+                break;
+
             case 5:
                 if (leaveStatus == LeaveStatusEnum.DEDUCT.getCode()) {
                     employee.setPersonalLeaveHours(employee.getPersonalLeaveHours() - leave.getActualLeaveHours());

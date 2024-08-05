@@ -16,6 +16,10 @@ import org.springframework.stereotype.Repository;
 public interface CarRepository extends JpaRepository<Car, Integer>, JpaSpecificationExecutor<Car> {
     List<Car> findByCreateTimeAfter(LocalDateTime since);
 
+    Car findTopByOrderByCreateTimeDesc();
+
+    
+
     @Query(value = "SELECT * FROM Car WHERE customer_id= :Id", nativeQuery = true)
     List<Car> findByCustomerId(Integer Id); // 搜尋會員心儀清單
 }
