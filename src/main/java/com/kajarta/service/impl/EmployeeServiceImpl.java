@@ -165,8 +165,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .permisionRemarks("入職給假")
                 .reason("入職給假")
                 .actualLeaveHours(LeaveTypeEnum.SICK.getHoursPolicy())
-//                .validityPeriodStart(DateUtil.getDayStartOfYearIso())
-//                .validityPeriodEnd(DateUtil.getDayEndOfYearIso())
+                .validityPeriodStart(DateUtil.getDayStartOfYearIso())
+                .validityPeriodEnd(DateUtil.getDayEndOfYearIso())
                 .build());
         // 如果病假紀錄新增成功，要去employee增加時數
         if(sickLeave != null){
@@ -185,8 +185,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .permisionRemarks("入職給假")
                 .reason("入職給假")
                 .actualLeaveHours(LeaveTypeEnum.PERSONAL.getHoursPolicy())
-//                .validityPeriodStart(DateUtil.getDayStartOfYearIso())
-//                .validityPeriodEnd(DateUtil.getDayEndOfYearIso())
+                .validityPeriodStart(DateUtil.getDayStartOfYearIso())
+                .validityPeriodEnd(DateUtil.getDayEndOfYearIso())
                 .build());
         // 如果病假紀錄新增成功，要去employee增加時數
         if(personalLeave != null){

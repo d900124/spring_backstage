@@ -38,6 +38,7 @@ import com.kajarta.demo.model.Transmission;
 import com.kajarta.service.BrandService;
 import com.kajarta.service.CarInfoService;
 import com.kajarta.service.CarService;
+import com.kajarta.service.CustomerService;
 import com.kajarta.service.DisplacementService;
 import com.kajarta.service.DoorService;
 import com.kajarta.service.EmployeeService;
@@ -88,6 +89,9 @@ public class CarController {
 
     @Autowired
     private EmployeeService employeeService;
+
+    @Autowired
+    private CustomerService customerService;
 
     // 查全部
     @GetMapping("/findAll")
@@ -227,6 +231,17 @@ public class CarController {
             Transmission transmissionEnum = transmissionService.findById(carInfoBean.getTransmission());
             Displacement displacementEnum = displacementService.findById(carInfoBean.getCc());
             BranchEnum branch = BranchEnum.getByCode(carBean.getBranch());
+            Integer stateCode = carBean.getState();
+            String state = "無狀態";
+            if (stateCode == 1) {
+                state = "草稿";
+            } else if (stateCode == 2) {
+                state = "上架";
+            } else if (stateCode == 3) {
+                state = "下架";
+            } else if (stateCode == 4) {
+                state = "暫時下架";
+            }
             if (carBean != null) {
                 Car carModel = carBean;
                 String compareUrl = "kajarta/car/compare";
@@ -235,11 +250,13 @@ public class CarController {
                         .put("productionYear", carModel.getProductionYear())
                         .put("milage", carModel.getMilage())
                         .put("customerId", carModel.getCustomer().getId())
+                        .put("customerName", carModel.getCustomer().getName())
                         .put("employeeId", carModel.getEmployee().getId())
                         .put("negotiable", negotiableEnum.getCode())
                         .put("conditionScore", carModel.getConditionScore())
                         .put("branch", branch.getCode())
                         .put("state", carModel.getState())
+                        .put("stateName", state)
                         .put("price", carModel.getPrice())
                         .put("launchDate", carModel.getLaunchDate())
                         .put("color", carModel.getColor())
