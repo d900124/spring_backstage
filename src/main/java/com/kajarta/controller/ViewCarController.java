@@ -2,6 +2,7 @@ package com.kajarta.controller;
 
 import java.util.List;
 
+import com.kajarta.service.EmployeeService;
 import com.kajarta.service.ViewCarService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -112,42 +113,42 @@ public class ViewCarController {
         return responseBody.toString();
     }
 
-     //查全
-     @GetMapping("/selectAll")
-     public String findByPage(@RequestParam Integer pageNumber, @RequestParam Integer max) {
-         JSONObject responseBody = new JSONObject();
-         JSONArray array = new JSONArray();
-         Page<ViewCar> page = viewCarService.findByPage(pageNumber, max);
-         List<ViewCar> viewCars = page.getContent();
-         for (ViewCar viewCar : viewCars) {
-             String viewCarDate = DatetimeConverter.toString(viewCar.getViewCarDate(), "yyyy-MM-dd");
-             String createTime = DatetimeConverter.toString(viewCar.getCreateTime(), "yyyy-MM-dd");
-             String updateTime = DatetimeConverter.toString(viewCar.getUpdateTime(), "yyyy-MM-dd");
-             JSONObject obj = new JSONObject()
-                     .put("id", viewCar.getId())
-                     .put("viewTimeSection", ViewTimeSectionEnum.getByCode(viewCar.getViewTimeSection()).getTimeRange())
-                     .put("car", viewCar.getCar().getId())
-                     .put("modelName", viewCar.getCar().getCarinfo().getModelName())
-                     .put("branch", viewCar.getCar().getBranch())
-                     .put("salesScore", viewCar.getSalesScore())
-                     .put("factoryScore", viewCar.getFactoryScore())
-                     .put("viewCarDate", viewCarDate)
-                     .put("carScore", viewCar.getCarScore())
-                     .put("deal", viewCar.getDeal())
-                     .put("customer", viewCar.getCustomer().getId())
-                     .put("customerName", viewCar.getCustomer().getName())
-                     .put("tel", viewCar.getCustomer().getTel())
-                     .put("createTime", createTime)
-                     .put("updateTime", updateTime)
-                     .put("viewCarStatus", viewCar.getViewCarStatus());
-             array.put(obj);
-         }
-         responseBody.put("list", array);
-         responseBody.put("totalPages", page.getTotalPages());
-         responseBody.put("totalElements", page.getTotalElements());
-         responseBody.put("currentPage", page.getNumber() + 1);  // Page numbers are 0-based, so we add 1
-         return responseBody.toString();
-     }
+    // 查全
+    @GetMapping("/selectAll")
+    public String findByPage(@RequestParam Integer pageNumber, @RequestParam Integer max) {
+        JSONObject responseBody = new JSONObject();
+        JSONArray array = new JSONArray();
+        Page<ViewCar> page = viewCarService.findByPage(pageNumber, max);
+        List<ViewCar> viewCars = page.getContent();
+        for (ViewCar viewCar : viewCars) {
+            String viewCarDate = DatetimeConverter.toString(viewCar.getViewCarDate(), "yyyy-MM-dd");
+            String createTime = DatetimeConverter.toString(viewCar.getCreateTime(), "yyyy-MM-dd");
+            String updateTime = DatetimeConverter.toString(viewCar.getUpdateTime(), "yyyy-MM-dd");
+            JSONObject obj = new JSONObject()
+                    .put("id", viewCar.getId())
+                    .put("viewTimeSection", ViewTimeSectionEnum.getByCode(viewCar.getViewTimeSection()).getTimeRange())
+                    .put("car", viewCar.getCar().getId())
+                    .put("modelName", viewCar.getCar().getCarinfo().getModelName())
+                    .put("branch", viewCar.getCar().getBranch())
+                    .put("salesScore", viewCar.getSalesScore())
+                    .put("factoryScore", viewCar.getFactoryScore())
+                    .put("viewCarDate", viewCarDate)
+                    .put("carScore", viewCar.getCarScore())
+                    .put("deal", viewCar.getDeal())
+                    .put("customer", viewCar.getCustomer().getId())
+                    .put("customerName", viewCar.getCustomer().getName())
+                    .put("tel", viewCar.getCustomer().getTel())
+                    .put("createTime", createTime)
+                    .put("updateTime", updateTime)
+                    .put("viewCarStatus", viewCar.getViewCarStatus());
+            array.put(obj);
+        }
+        responseBody.put("list", array);
+        responseBody.put("totalPages", page.getTotalPages());
+        responseBody.put("totalElements", page.getTotalElements());
+        responseBody.put("currentPage", page.getNumber() + 1); // Page numbers are 0-based, so we add 1
+        return responseBody.toString();
+    }
 
     // 多條件查詢
     // 刪除
