@@ -109,6 +109,8 @@ public class CarController {
             Employee employee = employeeService.findById(car.getEmployee().getId());
             Integer stateCode = car.getState();
             String state = "無狀態";
+            Integer employeeType = car.getEmployee().getAccountType();
+            Integer customerType = car.getCustomer().getAccountType();
             if (stateCode == 1) {
                 state = "草稿";
             } else if (stateCode == 2) {
@@ -124,6 +126,7 @@ public class CarController {
                     .put("productionYear", car.getProductionYear())
                     .put("milage", car.getMilage())
                     .put("customerId", car.getCustomer().getId())
+                    .put("customerName", car.getCustomer().getName())
                     .put("employeeId", car.getEmployee().getId())
                     .put("employeeName", employee.getName())
                     .put("negotiable", car.getNegotiable())
@@ -140,6 +143,14 @@ public class CarController {
                     .put("remark", car.getRemark())
                     .put("createTime", createTime)
                     .put("updateTime", updateTime);
+            if (employeeType == 3) {
+                item.put("salesEmployeeId", car.getEmployee().getId())
+                        .put("salesEmployeeName", employee.getName());
+            }
+            if (customerType == 2) {
+                item.put("salesCustomerId", car.getCustomer().getId())
+                        .put("salesCustomerName", car.getCustomer().getName());
+            }
             array.put(item);
         }
         responseBody.put("list", array);
